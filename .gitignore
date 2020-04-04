@@ -67,7 +67,7 @@ Makefile.user
 *.pyc
 
 Makefile
-config/compile
+
 src/Makefile
 src/keepaway.sh
 src/sample_coach
