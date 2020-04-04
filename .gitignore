@@ -66,3 +66,15 @@ Makefile.user
 
 *.pyc
 
+Makefile
+config/compile
+src/Makefile
+src/keepaway.sh
+src/sample_coach
+src/sample_player
+src/sample_trainer
+src/start.sh
+src/train.sh
+
+CMakeLists.txt
+

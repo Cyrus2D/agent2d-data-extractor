@@ -1,3 +1,0 @@
-/home/aref/Documents/2d/agent2d-data-extractor/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/aref/Documents/2d/agent2d-data-extractor/cmake-build-debug/CMakeFiles/agent2d_data_extractor.dir
-/home/aref/Documents/2d/agent2d-data-extractor/cmake-build-debug/CMakeFiles/edit_cache.dir

@@ -43,6 +43,8 @@
 #include <cstdio>
 #include <cmath>
 
+#include "DataExtractor.h"
+
 #define DEBUG_PROFILE
 // #define ACTION_CHAIN_DEBUG
 // #define DEBUG_PAINT_EVALUATED_POINTS
@@ -137,8 +139,9 @@ ActionChainGraph::ActionChainGraph( const FieldEvaluator::ConstPtr & evaluator,
 
  */
 void
-ActionChainGraph::calculateResult( const WorldModel & wm )
+ActionChainGraph::calculateResult( const PlayerAgent *agent )
 {
+    const WorldModel& wm = agent->world();
     debugPrintCurrentState( wm );
 
 #if (defined DEBUG_PROFILE) || (defined ACTION_CHAIN_LOAD_DEBUG)
@@ -173,6 +176,9 @@ ActionChainGraph::calculateResult( const WorldModel & wm )
                      M_best_chain_count,
                      M_result,
                      M_best_evaluation );
+
+    ActionStatePair *first_layer = M_result.begin().base();
+    DataExtractor::i().update(agent, first_layer);
 
 #if (defined DEBUG_PROFILE) || (defined ACTION_CHAIN_LOAD_DEBUG)
     const double msec = timer.elapsedReal();

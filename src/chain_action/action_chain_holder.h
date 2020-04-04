@@ -34,11 +34,14 @@
 
 namespace rcsc {
 class WorldModel;
+class PlayerAgent;
 }
 
 #include "action_chain_graph.h"
 #include "field_evaluator.h"
 #include "action_generator.h"
+#include <rcsc/player/player_agent.h>
+
 
 class ActionChainHolder {
 
@@ -79,7 +82,7 @@ public:
     FieldEvaluator::ConstPtr fieldEvaluator() const;
     ActionGenerator::ConstPtr actionGenerator() const;
 
-    void update( const rcsc::WorldModel & wm );
+    void update( const rcsc::PlayerAgent *agent );
 
     const ActionChainGraph & graph() const;
 };
