@@ -13,12 +13,12 @@ class SortType(Enum):
 
 
 class DataAnalysis:
-    def __init__(self, file_in, file_out, sort_type=None, randomize=0, img_mode=False):
+    def __init__(self, file_in, file_out, sort_type=None, randomize=0, img_mode=False, normalize=True):
         self.headers = []
 
-        self.analys_file(file_in, file_out, sort_type, randomize, img_mode)
+        self.analys_file(file_in, file_out, sort_type, randomize, img_mode, normalize)
 
-    def analys_file(self, file_in, file_out, sort_type, randomize, img_mode):
+    def analys_file(self, file_in, file_out, sort_type, randomize, img_mode, normalize):
         file = open(file_in)
         out = None
         if not img_mode:
@@ -51,7 +51,9 @@ class DataAnalysis:
                 state.sort(self.find_function(state, sort_type))
 
             # Save State
-            state.normalize()
+            if normalize:
+                state.normalize()
+                
             if img_mode:
                 state.export_img(file_out)
             else:

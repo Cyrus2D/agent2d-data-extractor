@@ -7,7 +7,7 @@ the file names determine agent unum and opponents team name and if parallel game
 
 ### Option
 **DataExtractor** class  have a struct option that user can select easily which feature wants to write in the file for which team.
- 
+
  ```c++
  DataExtractor::Option::Option() {
     side = BOTH;
@@ -42,7 +42,7 @@ the file names determine agent unum and opponents team name and if parallel game
  ```
  #### dribleAngle  & nDribleAngle
  from player pos separate nDribleAngle zone and find nearest opponent in these zones, for example in angle range [30,60] dribleAngle=10, it means that in this range nearest opponent distance is 10.
-  
+
  #### worldMode
  this feature determine from which world extract data, **world** or **fullstate_world**, in base you can change player.conf to separate these two.(in this project, player.conf have been changed for this purpose.)
 
@@ -59,7 +59,7 @@ in the script directory is python script tools
 this class change the data base on inputs.
 #### initialization
 ```python3
-def __init__(self, file_in, file_out, sort_type=None, randomize=0, img_mode=False)
+def __init__(self, file_in, file_out, sort_type=None, randomize=0, img_mode=False, normalize=True)
 ```
 
  - **file_in**: is input file of data.
@@ -77,5 +77,3 @@ this script base on input directory and an output file, merge all input director
 
 ### feature_importance.py
 this script read an input csv file and determine feature importance for classifier outputs, and write in csv file file for each output.(the algorithm is Random Forest Classifier.)
-
-
