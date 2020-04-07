@@ -60,7 +60,7 @@ this class change the data base on inputs.
 #### initialization
 ```python3
 def __init__(self, file_in, file_out, sort_type=None, randomize=0, img_mode=False)
-        ```
+```
 
  - **file_in**: is input file of data.
  - **file_out**: is output file that result save in it.
@@ -77,3 +77,5 @@ this script base on input directory and an output file, merge all input director
 
 ### feature_importance.py
 this script read an input csv file and determine feature importance for classifier outputs, and write in csv file file for each output.(the algorithm is Random Forest Classifier.)
+
+
