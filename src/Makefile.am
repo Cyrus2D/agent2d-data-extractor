@@ -229,19 +229,19 @@ noinst_DATA = \
 sample_player_SOURCES = \
 	$(CHAINACTIONSOURCES) \
 	$(PLAYERSOURCES)
-sample_player_CXXFLAGS = -W -Wall
+sample_player_CXXFLAGS = -W -Wall -std=c++11
 sample_player_LDFLAGS =
 sample_player_LDADD =
 
 sample_coach_SOURCES = \
 	$(COACHSOURCES)
-sample_coach_CXXFLAGS = -W -Wall
+sample_coach_CXXFLAGS = -W -Wall -std=c++11
 sample_coach_LDFLAGS =
 sample_coach_LDADD =
 
 sample_trainer_SOURCES = \
 	$(TRAINERSOURCES)
-sample_trainer_CXXFLAGS = -W -Wall
+sample_trainer_CXXFLAGS = -W -Wall -std=c++11
 sample_trainer_LDFLAGS =
 sample_trainer_LDADD =
 
