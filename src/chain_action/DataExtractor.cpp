@@ -828,7 +828,7 @@ void DataExtractor::extract_goal_open_angle(const rcsc::AbstractPlayerObject *pl
                   return (p1 - player->pos()).th().degree() < (p2 - player->pos()).th().degree();
               });
 
-    double max_open_angle = -1000;
+    double max_open_angle = 0;
     for (uint i = 1; i < players_in_area.size(); i++) {
         double angle_diff = fabs((players_in_area[i] - player->pos()).th().degree()
                                  - (players_in_area[i - 1] - player->pos()).th().degree());
