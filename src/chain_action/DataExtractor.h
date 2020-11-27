@@ -61,7 +61,7 @@ private:
         PlayerSortMode playerSortMode;
 
         bool use_convertor;
-
+        int history_size;
         Option();
     };
 
@@ -87,7 +87,7 @@ public:
     void extract_output(const rcsc::WorldModel &wm, int category, const rcsc::Vector2D &target, const int &unum,
                         const char *desc, double bell_speed);
 
-
+    static void update_history(const rcsc::PlayerAgent *agent);
 private:
     void init_file(const rcsc::WorldModel &wm);
 
@@ -110,6 +110,8 @@ private:
     void extract_base_data(const rcsc::AbstractPlayerObject *player, DataSide side);
 
     void extract_type(const rcsc::AbstractPlayerObject *player, DataSide side);
+
+    void extract_history(const rcsc::AbstractPlayerObject *player, DataSide side);
 
 
     uint find_unum_index(const rcsc::WorldModel &wm, uint unum);
@@ -153,6 +155,12 @@ private:
     void extract_drible_angles(const rcsc::WorldModel &wm);
 
     std::vector<const rcsc::AbstractPlayerObject *> sort_players(const rcsc::WorldModel &wm);
+    static std::vector<std::vector<rcsc::Vector2D>> history_pos;
+    static std::vector<std::vector<rcsc::Vector2D>> history_vel;
+    static std::vector<std::vector<rcsc::AngleDeg>> history_body;
+    static std::vector<std::vector<int>> history_pos_count;
+    static std::vector<std::vector<int>> history_vel_count;
+    static std::vector<std::vector<int>> history_body_count;
 };
 
 class Polar {
