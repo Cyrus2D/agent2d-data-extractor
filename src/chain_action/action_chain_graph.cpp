@@ -141,7 +141,7 @@ ActionChainGraph::ActionChainGraph( const FieldEvaluator::ConstPtr & evaluator,
 void
 ActionChainGraph::calculateResult( const PlayerAgent *agent )
 {
-    const WorldModel& wm = agent->world();
+    const WorldModel& wm = agent->fullstateWorld();
     debugPrintCurrentState( wm );
 
 #if (defined DEBUG_PROFILE) || (defined ACTION_CHAIN_LOAD_DEBUG)
