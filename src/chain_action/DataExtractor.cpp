@@ -270,8 +270,11 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
         if (option.isKicker == TM || option.isKicker == BOTH)
             header += "p_l_" + std::to_string(i) + "_is_kicker,";
         if (option.openAnglePass == TM || option.openAnglePass == BOTH) {
-            header += "p_l_" + std::to_string(i) + "_pass_angle,";
             header += "p_l_" + std::to_string(i) + "_pass_dist,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp1_dist,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp1_angle,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp2_dist,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp2_angle,";
         }
         if (option.nearestOppDist == TM || option.nearestOppDist == BOTH){
             header += "p_l_" + std::to_string(i) + "_near1_opp_dist,";
@@ -696,23 +699,40 @@ void DataExtractor::extract_output(const rcsc::WorldModel &wm,
 void DataExtractor::extract_pass_angle(const AbstractPlayerObject *player, const WorldModel &wm, DataSide side) {
     Vector2D ball_pos = wm.ball().pos();
     Vector2D tm_pos = player->pos();
-    double min_angle = 180;
     std::vector<std::pair<double, double>> opp_dist_angle;
+    std::vector<std::pair<double, double>> opp_pass_angle_dist;
     for (int o = 1; o <= 11; o++) {
         const AbstractPlayerObject *opp = wm.theirPlayer(o);
         if (opp == nullptr || opp->unum() != o)
             continue;
         opp_dist_angle.push_back(std::make_pair(opp->pos().dist(tm_pos), (opp->pos() - tm_pos).th().degree()));
-        if (opp->pos().dist(ball_pos) > tm_pos.dist(ball_pos))
+        if (opp->pos().dist(ball_pos) > tm_pos.dist(ball_pos) + 5.0)
+            continue;
+        if (opp->pos().dist(tm_pos) > tm_pos.dist(ball_pos) + 5.0)
             continue;
         AngleDeg diff = (tm_pos - ball_pos).th() - (opp->pos() - ball_pos).th();
         double diff_double = diff.abs();
-        if (diff_double < min_angle)
-            min_angle = diff_double;
+        opp_pass_angle_dist.push_back(std::make_pair(diff_double, opp->distFromBall()));
     }
     if (option.openAnglePass == side || option.openAnglePass == BOTH) {
-        ADD_ELEM("pass_angle", convertor_angle(min_angle));
         ADD_ELEM("pass_dist", convertor_dist(ball_pos.dist(tm_pos)));
+        std::sort(opp_pass_angle_dist.begin(), opp_pass_angle_dist.end());
+        if (opp_pass_angle_dist.size() >= 1){
+            ADD_ELEM("pass_opp1_dist", convertor_dist(opp_pass_angle_dist[0].second));
+            ADD_ELEM("pass_opp1_angle", convertor_angle(opp_pass_angle_dist[0].first));
+        }
+        else{
+            ADD_ELEM("pass_opp1_dist", invalid_data);
+            ADD_ELEM("pass_opp1_angle", invalid_data);
+        }
+        if (opp_pass_angle_dist.size() >= 2){
+            ADD_ELEM("pass_opp2_dist", convertor_dist(opp_pass_angle_dist[1].second));
+            ADD_ELEM("pass_opp2_angle", convertor_angle(opp_pass_angle_dist[1].first));
+        }
+        else{
+            ADD_ELEM("pass_opp2_dist", invalid_data);
+            ADD_ELEM("pass_opp2_angle", invalid_data);
+        }
     }
     if (option.nearestOppDist == side || option.nearestOppDist == BOTH){
         std::sort(opp_dist_angle.begin(), opp_dist_angle.end());
