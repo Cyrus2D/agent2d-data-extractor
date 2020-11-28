@@ -56,7 +56,9 @@ public:
       \return true if action is performed
      */
     bool execute( rcsc::PlayerAgent * agent );
-
+    static int time;
+    static rcsc::Vector2D target;
+    static double speed;
 private:
 
     bool doTurnNeckToShootPoint( rcsc::PlayerAgent * agent,

@@ -31,8 +31,7 @@ DataExtractor::~DataExtractor() {
 
 #include "../sample_player.h"
 void DataExtractor::update_history(const rcsc::PlayerAgent *agent){
-//    const WorldModel &wm = option.worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
-    const WorldModel &wm = agent->world();
+    const WorldModel &wm = option.input_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     static int last_update = -1;
     if (last_update == -1){
         for (int i = 0; i <= 22; i++){
@@ -124,8 +123,8 @@ void DataExtractor::update_history(const rcsc::PlayerAgent *agent){
 }
 
 
-void DataExtractor::update(const PlayerAgent *agent, const ActionStatePair *first_layer) {
-    const WorldModel &wm = option.worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+void DataExtractor::update(const PlayerAgent *agent, const ActionStatePair *first_layer,bool update_shoot) {
+    const WorldModel &wm = option.input_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     if (last_update_cycle == wm.time().cycle())
         return;
@@ -139,16 +138,19 @@ void DataExtractor::update(const PlayerAgent *agent, const ActionStatePair *firs
     last_update_cycle = wm.time().cycle();
     data.clear();
 
-    if (
-            ((CooperativeAction &) first_layer->action()).category() > 2
-            ||
-            !((CooperativeAction &) first_layer->action()).targetPoint().isValid()
-            ||
-            ((CooperativeAction &) first_layer->action()).targetPlayerUnum() > 11
-            ||
-            ((CooperativeAction &) first_layer->action()).targetPlayerUnum() < 1
-            )
-        return;
+    if (!update_shoot){
+        if (
+                ((CooperativeAction &) first_layer->action()).category() > 2
+                ||
+                !((CooperativeAction &) first_layer->action()).targetPoint().isValid()
+                ||
+                ((CooperativeAction &) first_layer->action()).targetPlayerUnum() > 11
+                ||
+                ((CooperativeAction &) first_layer->action()).targetPlayerUnum() < 1
+                )
+            return;
+    }
+
     // cycle
     ADD_ELEM("cycle", convertor_cycle(last_update_cycle));
 
@@ -162,14 +164,15 @@ void DataExtractor::update(const PlayerAgent *agent, const ActionStatePair *firs
     extract_players(wm);
 
     // output
-    extract_output(wm,
-                   ((CooperativeAction &) first_layer->action()).category(),
-                   ((CooperativeAction &) first_layer->action()).targetPoint(),
-                   ((CooperativeAction &) first_layer->action()).targetPlayerUnum(),
-                   ((CooperativeAction &) first_layer->action()).description(),
-                   ((CooperativeAction &) first_layer->action()).firstBallSpeed());
-    fout << std::endl;
-
+    if (!update_shoot){
+        extract_output(wm,
+                       ((CooperativeAction &) first_layer->action()).category(),
+                       ((CooperativeAction &) first_layer->action()).targetPoint(),
+                       ((CooperativeAction &) first_layer->action()).targetPlayerUnum(),
+                       ((CooperativeAction &) first_layer->action()).description(),
+                       ((CooperativeAction &) first_layer->action()).firstBallSpeed());
+        fout << std::endl;
+    }
 }
 
 DataExtractor &DataExtractor::i() {
@@ -483,7 +486,6 @@ void DataExtractor::extract_kicker(const rcsc::WorldModel &wm) {
 void DataExtractor::extract_players(const rcsc::WorldModel &wm) {
     auto players = sort_players(wm);
     for (uint i = 0; i < players.size(); i++) {
-        std::cout<<players.size()<<std::endl;
         const AbstractPlayerObject *player = players[i];
         if (player == NULL) {
             add_null_player(invalid_data,
@@ -679,11 +681,11 @@ void DataExtractor::extract_output(const rcsc::WorldModel &wm,
                                    const char *desc,
                                    double ball_speed) {
     ADD_ELEM("category", category);
-    ADD_ELEM("target_x", target.x);
-    ADD_ELEM("target_y", target.y);
+    ADD_ELEM("target_x", convertor_x(target.x));
+    ADD_ELEM("target_y", convertor_y(target.y));
     ADD_ELEM("unum", unum);
     ADD_ELEM("unum_index", find_unum_index(wm, unum));
-    ADD_ELEM("ball_speed", ball_speed);
+    ADD_ELEM("ball_speed", convertor_bv(ball_speed));
     ADD_ELEM("ball_dir", convertor_angle((target - wm.ball().pos()).th().degree()));
     if (category == 2) {
         if (std::string(desc) == "strictDirect") {
@@ -699,7 +701,19 @@ void DataExtractor::extract_output(const rcsc::WorldModel &wm,
         ADD_ELEM("desc", 4);
     }
 }
-
+void DataExtractor::update_for_shoot(const rcsc::PlayerAgent *agent, rcsc::Vector2D target, double ballsp){
+    update(agent, NULL, true);
+    const WorldModel &wm = option.input_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+    ADD_ELEM("category", 3);
+    ADD_ELEM("target_x", convertor_x(target.x));
+    ADD_ELEM("target_y", convertor_y(target.y));
+    ADD_ELEM("unum", wm.self().unum());
+    ADD_ELEM("unum_index", find_unum_index(wm, wm.self().unum()));
+    ADD_ELEM("ball_speed", convertor_bv(ballsp));
+    ADD_ELEM("ball_dir", convertor_angle((target - wm.ball().pos()).th().degree()));
+    ADD_ELEM("desc", 4);
+    fout << std::endl;
+}
 void DataExtractor::extract_pass_angle(const AbstractPlayerObject *player, const WorldModel &wm, DataSide side) {
     Vector2D ball_pos = wm.ball().pos();
     Vector2D tm_pos = player->pos();
@@ -1124,9 +1138,10 @@ DataExtractor::Option::Option() {
 
     dribleAngle = Kicker;
     nDribleAngle = 12;
-    history_size = 2;
-    worldMode = NONE_FULLSTATE;
+    history_size = 3;
+    input_worldMode = NONE_FULLSTATE;
+    output_worldMode = FULLSTATE;
     playerSortMode = X;
 
-    use_convertor = false;
+    use_convertor = true;
 }

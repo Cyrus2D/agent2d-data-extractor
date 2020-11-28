@@ -9,7 +9,7 @@
 #include <rcsc/geom.h>
 #include <rcsc/player/player_agent.h>
 #include "action_state_pair.h"
-
+//#include "shoot_generator.h"
 enum DataSide {
     NONE,
     TM,
@@ -56,7 +56,9 @@ private:
         DataSide dribleAngle;
         int nDribleAngle;
 
-        WorldMode worldMode;
+        WorldMode input_worldMode;
+        WorldMode output_worldMode;
+
 
         PlayerSortMode playerSortMode;
 
@@ -68,7 +70,6 @@ private:
 private:
     std::ofstream fout;
     long last_update_cycle;
-    Option option;
     std::vector<double> data;
 
 public:
@@ -76,9 +77,10 @@ public:
     DataExtractor();
 
     ~DataExtractor();
-
+    Option option;
     void update(const rcsc::PlayerAgent *agent,
-                const ActionStatePair *first_layer);
+                const ActionStatePair *first_layer,
+                bool update_shoot=false);
 
 
     //accessors
@@ -86,8 +88,9 @@ public:
 
     void extract_output(const rcsc::WorldModel &wm, int category, const rcsc::Vector2D &target, const int &unum,
                         const char *desc, double bell_speed);
+    void update_for_shoot(const rcsc::PlayerAgent *agent, rcsc::Vector2D target, double bell_speed);
 
-    static void update_history(const rcsc::PlayerAgent *agent);
+    void update_history(const rcsc::PlayerAgent *agent);
 private:
     void init_file(const rcsc::WorldModel &wm);
 

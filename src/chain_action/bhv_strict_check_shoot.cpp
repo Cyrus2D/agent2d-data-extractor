@@ -32,7 +32,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
 #include "bhv_strict_check_shoot.h"
 
 #include "shoot_generator.h"
@@ -45,7 +44,9 @@
 #include <rcsc/common/logger.h>
 
 using namespace rcsc;
-
+int Bhv_StrictCheckShoot::time = 0;
+rcsc::Vector2D Bhv_StrictCheckShoot::target = Vector2D(0, 0);
+double Bhv_StrictCheckShoot::speed = 0;
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -54,7 +55,7 @@ bool
 Bhv_StrictCheckShoot::execute( PlayerAgent * agent )
 {
     const WorldModel & wm = agent->world();
-
+//    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( ! wm.self().isKickable() )
     {
         std::cerr << __FILE__ << ": " << __LINE__
@@ -86,7 +87,6 @@ Bhv_StrictCheckShoot::execute( PlayerAgent * agent )
                       __FILE__": no best shoot" );
         return false;
     }
-
     // it is necessary to evaluate shoot courses
 
     agent->debugClient().addMessage( "Shoot" );
@@ -115,6 +115,9 @@ Bhv_StrictCheckShoot::execute( PlayerAgent * agent )
         {
              agent->setNeckAction( new Neck_TurnToGoalieOrScan( -1 ) );
              agent->debugClient().addMessage( "Force1Step" );
+             Bhv_StrictCheckShoot::time = wm.time().cycle();
+             Bhv_StrictCheckShoot::target = best_shoot->target_point_;
+             Bhv_StrictCheckShoot::speed = best_shoot->first_ball_speed_;
              return true;
         }
     }
@@ -128,6 +131,9 @@ Bhv_StrictCheckShoot::execute( PlayerAgent * agent )
         {
             agent->setNeckAction( new Neck_TurnToGoalieOrScan( -1 ) );
         }
+        Bhv_StrictCheckShoot::time = wm.time().cycle();
+        Bhv_StrictCheckShoot::target = best_shoot->target_point_;
+        Bhv_StrictCheckShoot::speed = best_shoot->first_ball_speed_;
         return true;
     }
 

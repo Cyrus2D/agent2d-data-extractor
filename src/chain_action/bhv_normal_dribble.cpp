@@ -34,7 +34,7 @@
 #endif
 
 #include "bhv_normal_dribble.h"
-
+#include "DataExtractor.h"
 #include "action_chain_holder.h"
 #include "action_chain_graph.h"
 #include "cooperative_action.h"
@@ -122,7 +122,8 @@ IntentionNormalDribble::finished( const PlayerAgent * agent )
         return true;
     }
 
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     if ( M_last_execute_time.cycle() + 1 != wm.time().cycle() )
     {
@@ -191,8 +192,8 @@ IntentionNormalDribble::execute( PlayerAgent * agent )
                   __FILE__": (intention:execute) turn=%d dash=%d",
                   M_turn_step, M_dash_step );
 
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     //
     // compare the current queue with other chain action candidates
     //
@@ -431,7 +432,8 @@ IntentionNormalDribble::doTurn( PlayerAgent * agent )
 
     const double default_dist_thr = 0.5;
 
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     --M_turn_step;
 
@@ -475,8 +477,8 @@ IntentionNormalDribble::doDash( PlayerAgent * agent )
         return false;
     }
 
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     --M_dash_step;
 
     double dash_power
@@ -588,8 +590,8 @@ Bhv_NormalDribble::Bhv_NormalDribble( const CooperativeAction & action,
 bool
 Bhv_NormalDribble::execute( PlayerAgent * agent )
 {
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( ! wm.self().isKickable() )
     {
         dlog.addText( Logger::DRIBBLE,

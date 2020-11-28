@@ -141,7 +141,7 @@ ActionChainGraph::ActionChainGraph( const FieldEvaluator::ConstPtr & evaluator,
 void
 ActionChainGraph::calculateResult( const PlayerAgent *agent )
 {
-    const WorldModel& wm = agent->fullstateWorld();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     debugPrintCurrentState( wm );
 
 #if (defined DEBUG_PROFILE) || (defined ACTION_CHAIN_LOAD_DEBUG)

@@ -34,7 +34,7 @@
 #endif
 
 #include "bhv_pass_kick_find_receiver.h"
-
+#include "DataExtractor.h"
 #include "action_chain_holder.h"
 #include "action_chain_graph.h"
 #include "field_analyzer.h"
@@ -114,7 +114,8 @@ IntentionPassKickFindReceiver::finished( const PlayerAgent * agent )
         return true;
     }
 
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     //
     // check kickable
@@ -213,7 +214,8 @@ Bhv_PassKickFindReceiver::Bhv_PassKickFindReceiver( const ActionChainGraph & cha
 bool
 IntentionPassKickFindReceiver::execute( PlayerAgent * agent )
 {
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     const AbstractPlayerObject * receiver = wm.ourPlayer( M_receiver_unum );
 
     if ( ! receiver )
@@ -275,8 +277,8 @@ Bhv_PassKickFindReceiver::execute( PlayerAgent * agent )
     dlog.addText( Logger::TEAM,
                   __FILE__": Bhv_PassKickFindReceiver" );
 
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( ! wm.self().isKickable() )
     {
         dlog.addText( Logger::TEAM,
@@ -460,8 +462,8 @@ bool
 Bhv_PassKickFindReceiver::doCheckReceiver( PlayerAgent * agent,
                                            const CooperativeAction & pass )
 {
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     double nearest_opp_dist = 65535.0;
     wm.getOpponentNearestTo( wm.ball().pos(), 10, &nearest_opp_dist );
     if ( nearest_opp_dist < 4.0 )
@@ -600,7 +602,8 @@ bool
 Bhv_PassKickFindReceiver::doKeepBall( rcsc::PlayerAgent * agent,
                                       const CooperativeAction & pass )
 {
-    Vector2D ball_vel = getKeepBallVel( agent->world() );
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+    Vector2D ball_vel = getKeepBallVel( wm );
 
     if ( ! ball_vel.isValid() )
     {
@@ -614,9 +617,9 @@ Bhv_PassKickFindReceiver::doKeepBall( rcsc::PlayerAgent * agent,
     // perform first kick
     //
 
-    Vector2D kick_accel = ball_vel - agent->world().ball().vel();
-    double kick_power = kick_accel.r() / agent->world().self().kickRate();
-    AngleDeg kick_angle = kick_accel.th() - agent->world().self().body();
+    Vector2D kick_accel = ball_vel - wm.ball().vel();
+    double kick_power = kick_accel.r() / wm.self().kickRate();
+    AngleDeg kick_angle = kick_accel.th() - wm.self().body();
 
     if ( kick_power > ServerParam::i().maxPower() )
     {
@@ -822,7 +825,8 @@ Bhv_PassKickFindReceiver::doTurnBodyNeckToReceiver( PlayerAgent * agent,
                                                     const CooperativeAction & pass )
 {
     const ServerParam & SP = ServerParam::i();
-    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+//    const WorldModel & wm = agent->world();
 
     const AbstractPlayerObject * receiver = wm.ourPlayer( pass.targetPlayerUnum() );
 

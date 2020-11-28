@@ -238,7 +238,7 @@ SamplePlayer::actionImpl()
     M_field_evaluator = createFieldEvaluator();
     M_action_generator = createActionGenerator();
 
-    DataExtractor::update_history(this);
+    DataExtractor::i().update_history(this);
     ActionChainHolder::instance().setFieldEvaluator( M_field_evaluator );
     ActionChainHolder::instance().setActionGenerator( M_action_generator );
 
@@ -589,6 +589,7 @@ SamplePlayer::doPreprocess()
     //
     if ( doShoot() )
     {
+        DataExtractor::i().update_for_shoot(this, Bhv_StrictCheckShoot::target, Bhv_StrictCheckShoot::speed);
         return true;
     }
 

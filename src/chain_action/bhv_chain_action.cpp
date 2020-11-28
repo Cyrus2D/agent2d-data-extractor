@@ -29,7 +29,7 @@
 #endif
 
 #include "bhv_chain_action.h"
-
+#include "DataExtractor.h"
 #include "action_chain_holder.h"
 #include "action_chain_graph.h"
 #include "action_state_pair.h"
@@ -212,7 +212,7 @@ Bhv_ChainAction::execute( PlayerAgent * agent )
     }
 
     const ServerParam & SP = ServerParam::i();
-    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     const CooperativeAction & first_action = M_chain_graph.getFirstAction();
 
@@ -354,8 +354,8 @@ Bhv_ChainAction::execute( PlayerAgent * agent )
 bool
 Bhv_ChainAction::doTurnToForward( PlayerAgent * agent )
 {
-    const WorldModel & wm = agent->world();
-
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( wm.gameMode().type() != GameMode::PlayOn )
     {
         return false;
