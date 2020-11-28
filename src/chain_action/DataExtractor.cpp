@@ -348,6 +348,12 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
             header += "p_r_" + std::to_string(i) + "_pos_r,";
             header += "p_r_" + std::to_string(i) + "_pos_t,";
         }
+        if (option.relativePos == OPP || option.relativePos == BOTH) {
+            header += "p_r_" + std::to_string(i) + "_kicker_x,";
+            header += "p_r_" + std::to_string(i) + "_kicker_y,";
+            header += "p_r_" + std::to_string(i) + "_kicker_r,";
+            header += "p_r_" + std::to_string(i) + "_kicker_t,";
+        }
         if (option.vel == OPP || option.vel == BOTH) {
             header += "p_r_" + std::to_string(i) + "_vel_x,";
             header += "p_r_" + std::to_string(i) + "_vel_y,";
@@ -389,12 +395,6 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
             if (option.polarPos == OPP || option.polarPos == BOTH) {
                 header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_pos_r,";
                 header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_pos_t,";
-            }
-            if (option.relativePos == OPP || option.relativePos == BOTH) {
-                header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_kicker_x,";
-                header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_kicker_y,";
-                header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_kicker_r,";
-                header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_kicker_t,";
             }
             if (option.vel == OPP || option.vel == BOTH) {
                 header += "p_r_" + std::to_string(i) + "_history_" + std::to_string(j + 1) + "_vel_x,";
@@ -483,6 +483,7 @@ void DataExtractor::extract_kicker(const rcsc::WorldModel &wm) {
 void DataExtractor::extract_players(const rcsc::WorldModel &wm) {
     auto players = sort_players(wm);
     for (uint i = 0; i < players.size(); i++) {
+        std::cout<<players.size()<<std::endl;
         const AbstractPlayerObject *player = players[i];
         if (player == NULL) {
             add_null_player(invalid_data,
@@ -622,8 +623,11 @@ void DataExtractor::add_null_player(int unum, DataSide side) {
     if (option.isKicker == side || option.isKicker == BOTH)
         ADD_ELEM("is_kicker", invalid_data);
     if (option.openAnglePass == side || option.openAnglePass == BOTH) {
-        ADD_ELEM("pass_angle", invalid_data);
         ADD_ELEM("pass_dist", invalid_data);
+        ADD_ELEM("pass_opp1_dist", invalid_data);
+        ADD_ELEM("pass_opp1_angle", invalid_data);
+        ADD_ELEM("pass_opp2_dist", invalid_data);
+        ADD_ELEM("pass_opp2_angle", invalid_data);
     }
     if (option.nearestOppDist == side || option.nearestOppDist == BOTH){
         ADD_ELEM("opp_dist", invalid_data);
@@ -911,8 +915,6 @@ void DataExtractor::extract_history(const rcsc::AbstractPlayerObject *player, Da
                 ADD_ELEM('history_pos_t', convertor_angle(DataExtractor::history_pos[unum][len - 2 - i].th().degree()));
             }
         }
-
-
         if (option.vel == side || option.vel == BOTH) {
             if (DataExtractor::history_vel_count[unum][len - 2 - i] == -1) {
                 ADD_ELEM('history_vel_x', invalid_data);
@@ -1122,7 +1124,7 @@ DataExtractor::Option::Option() {
 
     dribleAngle = Kicker;
     nDribleAngle = 12;
-    history_size = 5;
+    history_size = 2;
     worldMode = NONE_FULLSTATE;
     playerSortMode = X;
 
