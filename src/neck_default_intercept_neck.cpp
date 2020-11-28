@@ -32,7 +32,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
+#include "DataExtractor.h"
 #include "neck_default_intercept_neck.h"
 
 #include "action_chain_graph.h"
@@ -115,7 +115,8 @@ Neck_DefaultInterceptNeck::execute( PlayerAgent * agent )
 bool
 Neck_DefaultInterceptNeck::doTurnToReceiver( PlayerAgent * agent )
 {
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
 
     if ( wm.interceptTable()->selfReachCycle() >= 2 )
     {

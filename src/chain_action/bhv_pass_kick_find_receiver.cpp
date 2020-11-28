@@ -602,6 +602,7 @@ bool
 Bhv_PassKickFindReceiver::doKeepBall( rcsc::PlayerAgent * agent,
                                       const CooperativeAction & pass )
 {
+//    const WorldModel &wm = agent->world();
     const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     Vector2D ball_vel = getKeepBallVel( wm );
 
@@ -638,9 +639,9 @@ Bhv_PassKickFindReceiver::doKeepBall( rcsc::PlayerAgent * agent,
 
     agent->debugClient().addMessage( "PassKickFind:KeepBall" );
     agent->debugClient().setTarget( pass.targetPlayerUnum() );
-    agent->debugClient().setTarget( agent->world().ball().pos()
-                                    + ball_vel
-                                    + ball_vel * ServerParam::i().ballDecay() );
+//    agent->debugClient().setTarget( agent->world().ball().pos()
+//                                    + ball_vel
+//                                    + ball_vel * ServerParam::i().ballDecay() );
 
     agent->doKick( kick_power, kick_angle );
     agent->setNeckAction( new Neck_TurnToReceiver( M_chain_graph ) );
@@ -969,13 +970,13 @@ Bhv_PassKickFindReceiver::doSayPass( PlayerAgent * agent,
 {
     const int receiver_unum = pass.targetPlayerUnum();
     const Vector2D & receive_pos = pass.targetPoint();
-
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( agent->config().useCommunication()
          && receiver_unum != Unum_Unknown
          && ! agent->effector().queuedNextBallKickable()
          )
     {
-        const AbstractPlayerObject * receiver = agent->world().ourPlayer( receiver_unum );
+        const AbstractPlayerObject * receiver = wm.ourPlayer( receiver_unum );
         if ( ! receiver )
         {
             return;

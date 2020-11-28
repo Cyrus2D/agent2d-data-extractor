@@ -54,7 +54,8 @@ double Bhv_StrictCheckShoot::speed = 0;
 bool
 Bhv_StrictCheckShoot::execute( PlayerAgent * agent )
 {
-    const WorldModel & wm = agent->world();
+//    const WorldModel & wm = agent->world();
+    const WorldModel & wm = agent->fullstateWorld();
 //    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
     if ( ! wm.self().isKickable() )
     {

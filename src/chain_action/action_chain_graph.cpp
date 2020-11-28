@@ -142,6 +142,7 @@ void
 ActionChainGraph::calculateResult( const PlayerAgent *agent )
 {
     const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+//    const WorldModel &wm = agent->world();
     debugPrintCurrentState( wm );
 
 #if (defined DEBUG_PROFILE) || (defined ACTION_CHAIN_LOAD_DEBUG)
@@ -607,8 +608,8 @@ ActionChainGraph::debug_send_chain( PlayerAgent * agent,
                                     const std::vector< ActionStatePair > & path )
 {
     const double DIRECT_PASS_DIST = 3.0;
-
-    const PredictState current_state( agent->world() );
+    const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
+    const PredictState current_state( wm );
 
     for ( size_t i = 0; i < path.size(); ++i )
     {

@@ -213,7 +213,7 @@ Bhv_ChainAction::execute( PlayerAgent * agent )
 
     const ServerParam & SP = ServerParam::i();
     const WorldModel &wm = DataExtractor::i().option.output_worldMode == FULLSTATE ? agent->fullstateWorld() : agent->world();
-
+//    const WorldModel &wm = agent->world();
     const CooperativeAction & first_action = M_chain_graph.getFirstAction();
 
     ActionChainGraph::debug_send_chain( agent, M_chain_graph.getAllChain() );
