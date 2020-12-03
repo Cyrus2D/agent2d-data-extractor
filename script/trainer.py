@@ -5,15 +5,17 @@ import keras
 from keras import layers, models, activations, losses, metrics, optimizers
 from keras.utils import to_categorical
 import matplotlib.pyplot as plt
+import copy
 
-save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/merged_data_temp.csv'
-# save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/test.csv'
-model = 'model.h5'
+
+save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/pass_data_full_history.csv'
+# save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/temp.csv'
+model = 'pass_unum_history_full_small.h5'
 df = pd.read_csv(save_file_path, dtype=float)
 just_test = False
 # df = df[df.index < 10000]
-use_hold = True
-use_dribble = True
+use_hold = False
+use_dribble = False
 use_pass = True
 df_hold = df[df['out_category'] == 0]
 df_dribble = df[df['out_category'] == 1]
@@ -81,12 +83,20 @@ for h in header:
         #     pass
 header_y = ['out_unum']
 # header_y = ['out_category']
+
+for h in copy.copy(header_x):
+    if h.find('history') >= 0:
+        header_x.remove(h)
+        continue
+    if h.find('Unnamed') >= 0:
+        header_x.remove(h)
+        continue
 df_x = df[header_x]
 df_y = df[header_y]
-print(header_x)
 del df
 try:
     del df_x['Unnamed: 0']
+    del df_x['Unnamed: 0.1']
 except:
     pass
 x = df_x.to_numpy()
@@ -126,7 +136,7 @@ def accuracy2(y_true, y_pred):
     return res
 
 
-def test():
+def validation():
     network = keras.models.load_model(model, custom_objects={'accuracy1': accuracy1, 'accuracy2': accuracy2})
     # test_loss, test_acc = network.evaluate(x_test, y_test)
     for i in range(50):
@@ -149,9 +159,9 @@ import keras.backend as K
 
 def train():
     network = models.Sequential()
-    network.add(layers.Dense(256, activation=activations.relu, input_shape=(x_train.shape[1],)))
+    network.add(layers.Dense(32, activation=activations.relu, input_shape=(x_train.shape[1],)))
     # network.add(layers.Dense(128, activation=activations.relu))
-    network.add(layers.Dense(64, activation=activations.relu))
+    # network.add(layers.Dense(64, activation=activations.relu))
     network.add(layers.Dense(32, activation=activations.relu))
     network.add(layers.Dense(y_train.shape[1], activation=activations.softmax))
     network.compile(optimizer=optimizers.adam(), loss=losses.categorical_crossentropy, metrics=[accuracy1, accuracy2])
@@ -193,9 +203,9 @@ def train():
     plt.ylabel('Acc2')
     plt.legend()
     plt.show()
-    network.save('model.h5')
+    network.save(model)
 
 
 if not just_test:
     train()
-test()
+validation()
