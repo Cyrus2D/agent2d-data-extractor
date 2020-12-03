@@ -59,7 +59,7 @@
 using namespace rcsc;
 
 const size_t ActionChainGraph::DEFAULT_MAX_CHAIN_LENGTH = 4;
-const size_t ActionChainGraph::DEFAULT_MAX_EVALUATE_LIMIT = 500;
+const size_t ActionChainGraph::DEFAULT_MAX_EVALUATE_LIMIT = 1000;
 
 std::vector< std::pair< Vector2D, double > > ActionChainGraph::S_evaluated_points;
 
