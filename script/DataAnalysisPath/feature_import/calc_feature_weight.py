@@ -12,10 +12,10 @@ import eli5
 from keras.utils import to_categorical
 import keras.backend as K
 
-use_binary = True
+use_binary = False
 
 features_number = 783
-dataset = numpy.loadtxt('/home/nader/workspace/robo/cyrus/script/2dDataAnalysis/feature_import/all_team_data_no_head_cama_sample1000.csv', delimiter=",")
+dataset = numpy.loadtxt('/home/nader/data/robo_data/test_pass.csv', delimiter=",")
 print(dataset.shape)
 X = dataset[:, 0:features_number]
 Y = dataset[:, 783]
@@ -44,7 +44,7 @@ def create_model():
 
 
 create_model()
-head = open('/home/nader/workspace/robo/cyrus/script/2dDataAnalysis/feature_import/head').readlines()[0][:-2].split(',')[:features_number]
+head = open('/home/nader/workspace/robo/cyrus/script/DataAnalysisPath/feature_import/head').readlines()[0][:-2].split(',')[:features_number]
 # create model
 train_epoch_number = 20
 model = KerasClassifier(build_fn=create_model, epochs=train_epoch_number, batch_size=10, verbose=1)

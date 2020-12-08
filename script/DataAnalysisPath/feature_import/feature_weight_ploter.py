@@ -4,15 +4,16 @@ import re
 # f = open('extra_trees_out_category.csv', 'r').readlines()[1:]
 # f = open('random_forest_out_category.csv', 'r').readlines()[1:]
 # f = open('extra_trees_out_unum.csv', 'r').readlines()[1:]
-files = ['nn_out_desc2.csv', 'nn_out_desc.csv', 'nn_out_desc3.csv']
+files = ['weight_same_train_test.csv', 'weight_dif_train_test.csv', 'randomf.csv']
 files_sum = []
 lines = []
 weights = []
 selected_features = [
-{'code': 'pos_x', 'sum': []},
-{'code': 'pos_y', 'sum': []},
-{'code': 'pos_r', 'sum': []},
-{'code': '_side', 'sum': []},
+{'code': 'p_l_[1-5]', 'sum': []},
+{'code': 'p_l_([6-9]|1[0-1])', 'sum': []},
+{'code': 'p_r_[1-5]', 'sum': []},
+{'code': 'p_r_([6-9]|1[0-1])', 'sum': []},
+# {'code': '_side', 'sum': []},
 # {'code':'_card', 'sum': []},
 ]
 
@@ -56,7 +57,7 @@ for i in range(len(files)):
 
     print(sum(data))
     print(files_sum[i])
-    ax[i][0].pie([sum(data) / files_sum[i] * 100.0, (files_sum[i] - sum(data)) / files_sum[i] * 100.0], colors=['red', 'black'])
+    # ax[i][0].pie([sum(data) / files_sum[i] * 100.0, (files_sum[i] - sum(data)) / files_sum[i] * 100.0], colors=['red', 'black'])
     wedges, texts, autotexts = ax[i][1].pie(data_percent, autopct=lambda pct: func(pct, data_percent), textprops=dict(color="w"))
     ax[i][1].legend(wedges, names,
               title=files[i],
