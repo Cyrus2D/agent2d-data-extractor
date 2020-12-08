@@ -25,7 +25,8 @@ enum WorldMode {
 
 enum PlayerSortMode {
     X,
-    ANGLE
+    ANGLE,
+    UNUM,
 };
 
 class DataExtractor {

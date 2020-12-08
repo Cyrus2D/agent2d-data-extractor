@@ -542,6 +542,9 @@ DataExtractor::sort_players(const rcsc::WorldModel &wm) {
             j += 1;
         }
     }
+    auto unum_sort = [](const AbstractPlayerObject *p1, const AbstractPlayerObject *p2) -> bool {
+        return p1->unum() > p2->unum();
+    };
     auto x_sort = [](const AbstractPlayerObject *p1, const AbstractPlayerObject *p2) -> bool {
         return p1->pos().x > p2->pos().x;
     };
@@ -556,6 +559,9 @@ DataExtractor::sort_players(const rcsc::WorldModel &wm) {
     } else if (option.playerSortMode == X) {
         std::sort(tms.begin(), tms.end(), x_sort);
         std::sort(opps.begin(), opps.end(), x_sort);
+    } else if (option.playerSortMode == UNUM) {
+        std::sort(tms.begin(), tms.end(), unum_sort);
+        std::sort(opps.begin(), opps.end(), unum_sort);
     }
 
     for (; tms.size() < 11; tms.push_back(static_cast<AbstractPlayerObject *>(0)));
@@ -1141,7 +1147,7 @@ DataExtractor::Option::Option() {
     history_size = 3;
     input_worldMode = NONE_FULLSTATE;
     output_worldMode = FULLSTATE;
-    playerSortMode = X;
+    playerSortMode = UNUM;
 
     use_convertor = true;
 }
