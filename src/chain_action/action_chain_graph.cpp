@@ -504,6 +504,8 @@ ActionChainGraph::calculateResultBestFirstSearch( const WorldModel & wm,
             candidate_series.push_back( *it );
 
             double ev = (*M_evaluator)( (*it).state(), candidate_series );
+            if(candidate_series.front().action().category() == CooperativeAction::Pass)
+                ev += 10;
             ++(*n_evaluated);
 #ifdef ACTION_CHAIN_DEBUG
             write_chain_log( wm, M_chain_count, candidate_series, ev );
