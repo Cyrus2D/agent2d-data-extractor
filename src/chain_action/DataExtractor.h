@@ -27,6 +27,7 @@ enum PlayerSortMode {
     X,
     ANGLE,
     UNUM,
+    RANDOM,
 };
 
 class DataExtractor {
@@ -62,7 +63,7 @@ private:
 
 
         PlayerSortMode playerSortMode;
-
+        bool kicker_first;
         bool use_convertor;
         int history_size;
         Option();
@@ -125,6 +126,10 @@ private:
     double convertor_y(double y);
 
     double convertor_dist(double dist);
+
+    double convertor_dist_x(double dist);
+
+    double convertor_dist_y(double dist);
 
     double convertor_angle(double angle);
 

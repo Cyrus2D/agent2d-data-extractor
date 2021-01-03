@@ -188,7 +188,7 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
-    std::string dir = "/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/data/";
+    std::string dir = "/home/nader/data/robo_data/";
     strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H-%M-%S", timeinfo);
     std::string str(buffer);
     std::string rand_name = std::to_string(SamplePlayer::player_port);
@@ -424,8 +424,8 @@ void DataExtractor::extract_ball(const rcsc::WorldModel &wm) {
         ADD_ELEM("p_y", convertor_y(wm.ball().pos().y));
         ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
         ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
-        ADD_ELEM("kicker_x", convertor_x(wm.ball().rpos().x));
-        ADD_ELEM("kicker_y", convertor_y(wm.ball().rpos().y));
+        ADD_ELEM("kicker_x", convertor_dist_x(wm.ball().rpos().x));
+        ADD_ELEM("kicker_y", convertor_dist_y(wm.ball().rpos().y));
         ADD_ELEM("kicker_r", convertor_dist(wm.ball().rpos().r()));
         ADD_ELEM("kicker_t", convertor_angle(wm.ball().rpos().th().degree()));
     } else {
@@ -515,7 +515,14 @@ void DataExtractor::extract_players(const rcsc::WorldModel &wm) {
 
 std::vector<const AbstractPlayerObject *>
 DataExtractor::sort_players(const rcsc::WorldModel &wm) {
-    std::vector<const AbstractPlayerObject *> tms;
+    static int cycle = 0;
+    static std::vector<const AbstractPlayerObject *> tms;
+    if (wm.time().cycle() == cycle){
+        return tms;
+    }
+    cycle = wm.time().cycle();
+    tms.clear();
+//    std::vector<const AbstractPlayerObject *> tms;
     std::vector<const AbstractPlayerObject *> opps;
     tms.clear();
     opps.clear();
@@ -532,8 +539,14 @@ DataExtractor::sort_players(const rcsc::WorldModel &wm) {
             || !player->pos().isValid()
             || !player->vel().isValid())
             continue;
-        if (j == 0)
-            tms.push_back(player);
+        if (j == 0){
+            if (option.kicker_first){
+                if (wm.self().unum()!=i)
+                    tms.push_back(player);
+            }else{
+                tms.push_back(player);
+            }
+        }
         else
             opps.push_back(player);
 
@@ -562,12 +575,22 @@ DataExtractor::sort_players(const rcsc::WorldModel &wm) {
     } else if (option.playerSortMode == UNUM) {
         std::sort(tms.begin(), tms.end(), unum_sort);
         std::sort(opps.begin(), opps.end(), unum_sort);
+    } else if (option.playerSortMode == RANDOM){
+        std::random_shuffle(tms.begin(), tms.end());
+        std::sort(opps.begin(), opps.end(), unum_sort);
     }
 
-    for (; tms.size() < 11; tms.push_back(static_cast<AbstractPlayerObject *>(0)));
+    if (option.kicker_first){
+        for (; tms.size() < 10; tms.push_back(static_cast<AbstractPlayerObject *>(0)));
+        tms.insert(tms.begin(), wm.ourPlayer(wm.self().unum()));
+    }else{
+        for (; tms.size() < 11; tms.push_back(static_cast<AbstractPlayerObject *>(0)));
+    }
+
     for (; opps.size() < 11; opps.push_back(static_cast<AbstractPlayerObject *>(0)));
 
     tms.insert(tms.end(), opps.begin(), opps.end());
+
     return tms;
 }
 
@@ -801,8 +824,8 @@ void DataExtractor::extract_pos(const AbstractPlayerObject *player, const WorldM
     }
     Vector2D rpos = player->pos() - wm.self().pos();
     if (option.relativePos == side || option.relativePos == BOTH) {
-        ADD_ELEM("kicker_x", convertor_x(rpos.x));
-        ADD_ELEM("kicker_y", convertor_y(rpos.y));
+        ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
+        ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
         ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
         ADD_ELEM("kicker_t", convertor_angle(rpos.th().degree()));
     }
@@ -974,7 +997,7 @@ void DataExtractor::extract_drible_angles(const WorldModel &wm) {
     double delta = 360.0 / option.nDribleAngle;
     for (double angle = -180; angle < 180; angle += delta) {
 
-        double min_opp_dist = 1000;
+        double min_opp_dist = 30;
         for (int i = 1; i <= 11; i++) {
             const AbstractPlayerObject *opp = wm.theirPlayer(i);
             if (opp == NULL || opp->unum() < 0)
@@ -989,10 +1012,7 @@ void DataExtractor::extract_drible_angles(const WorldModel &wm) {
                 min_opp_dist = dist;
         }
 
-        if (min_opp_dist > 30.0)
-            ADD_ELEM("dribble_angle", convertor_dist(30));
-        else
-            ADD_ELEM("dribble_angle", convertor_dist(min_opp_dist));
+        ADD_ELEM("dribble_angle", convertor_dist(min_opp_dist));
     }
 }
 
@@ -1015,6 +1035,20 @@ double DataExtractor::convertor_dist(double dist) {
         return dist;
 //    return dist / 63.0 - 1.0;
     return dist / 123.0;
+}
+
+double DataExtractor::convertor_dist_x(double dist) {
+    if (!option.use_convertor)
+        return dist;
+//    return dist / 63.0 - 1.0;
+    return dist / 105.0;
+}
+
+double DataExtractor::convertor_dist_y(double dist) {
+    if (!option.use_convertor)
+        return dist;
+//    return dist / 63.0 - 1.0;
+    return dist / 68.0;
 }
 
 double DataExtractor::convertor_angle(double angle) {
@@ -1144,10 +1178,10 @@ DataExtractor::Option::Option() {
 
     dribleAngle = Kicker;
     nDribleAngle = 12;
-    history_size = 3;
-    input_worldMode = NONE_FULLSTATE;
+    history_size = 0;
+    input_worldMode = FULLSTATE;
     output_worldMode = FULLSTATE;
-    playerSortMode = UNUM;
-
+    playerSortMode = RANDOM;
+    kicker_first = true;
     use_convertor = true;
 }

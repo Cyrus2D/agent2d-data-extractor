@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 
-read_path =      '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/data/'
-save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/merged_data.csv'
+read_path =      '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/temp_data/4'
+save_file_path = '/media/nader/8cf88936-ff21-4a0a-a07a-1dbec4247478/robo_data/temp_data/all_4.csv'
 
 header = ''
 
