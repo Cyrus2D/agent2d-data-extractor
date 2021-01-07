@@ -276,14 +276,22 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
             header += "p_l_" + std::to_string(i) + "_pass_dist,";
             header += "p_l_" + std::to_string(i) + "_pass_opp1_dist,";
             header += "p_l_" + std::to_string(i) + "_pass_opp1_angle,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp1_dist_line,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp1_dist_proj,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp1_dist_diffbody,";
             header += "p_l_" + std::to_string(i) + "_pass_opp2_dist,";
             header += "p_l_" + std::to_string(i) + "_pass_opp2_angle,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp2_dist_line,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp2_dist_proj,";
+            header += "p_l_" + std::to_string(i) + "_pass_opp2_dist_diffbody,";
         }
         if (option.nearestOppDist == TM || option.nearestOppDist == BOTH){
             header += "p_l_" + std::to_string(i) + "_near1_opp_dist,";
             header += "p_l_" + std::to_string(i) + "_near1_opp_angle,";
+            header += "p_l_" + std::to_string(i) + "_near1_opp_diffbody,";
             header += "p_l_" + std::to_string(i) + "_near2_opp_dist,";
             header += "p_l_" + std::to_string(i) + "_near2_opp_angle,";
+            header += "p_l_" + std::to_string(i) + "_near2_opp_diffbody,";
         }
         if (option.polarGoalCenter == TM || option.polarGoalCenter == BOTH) {
             header += "p_l_" + std::to_string(i) + "_angle_goal_center_r,";
@@ -657,14 +665,22 @@ void DataExtractor::add_null_player(int unum, DataSide side) {
         ADD_ELEM("pass_dist", invalid_data);
         ADD_ELEM("pass_opp1_dist", invalid_data);
         ADD_ELEM("pass_opp1_angle", invalid_data);
+        ADD_ELEM("pass_opp1_dist_line", invalid_data);
+        ADD_ELEM("pass_opp1_dist_proj", invalid_data);
+        ADD_ELEM("pass_opp1_dist_diffbody", invalid_data);
         ADD_ELEM("pass_opp2_dist", invalid_data);
         ADD_ELEM("pass_opp2_angle", invalid_data);
+        ADD_ELEM("pass_opp2_dist_line", invalid_data);
+        ADD_ELEM("pass_opp2_dist_proj", invalid_data);
+        ADD_ELEM("pass_opp2_dist_diffbody", invalid_data);
     }
     if (option.nearestOppDist == side || option.nearestOppDist == BOTH){
-        ADD_ELEM("opp_dist", invalid_data);
-        ADD_ELEM("opp_angle", invalid_data);
+        ADD_ELEM("opp1_dist", invalid_data);
+        ADD_ELEM("opp1_angle", invalid_data);
+        ADD_ELEM("opp1_diffbody", invalid_data);
         ADD_ELEM("opp2_dist", invalid_data);
         ADD_ELEM("opp2_angle", invalid_data);
+        ADD_ELEM("opp2_diffbody", invalid_data);
     }
 
     if (option.polarGoalCenter == side || option.polarGoalCenter == BOTH) {
@@ -747,57 +763,82 @@ void DataExtractor::extract_pass_angle(const AbstractPlayerObject *player, const
     Vector2D ball_pos = wm.ball().pos();
     Vector2D tm_pos = player->pos();
     std::vector<std::pair<double, double>> opp_dist_angle;
+    std::vector<std::pair<double, double>> opp_dist_body_diff;
     std::vector<std::pair<double, double>> opp_pass_angle_dist;
+    std::vector<std::pair<double, double>> opp_pass_projection;
+    std::vector<std::pair<double, double>> opp_pass_projection_bodydiff;
     for (int o = 1; o <= 11; o++) {
         const AbstractPlayerObject *opp = wm.theirPlayer(o);
         if (opp == nullptr || opp->unum() != o)
             continue;
-        opp_dist_angle.push_back(std::make_pair(opp->pos().dist(tm_pos), (opp->pos() - tm_pos).th().degree()));
-        if (opp->pos().dist(ball_pos) > tm_pos.dist(ball_pos) + 5.0)
-            continue;
-        if (opp->pos().dist(tm_pos) > tm_pos.dist(ball_pos) + 5.0)
-            continue;
+        opp_dist_angle.push_back(std::make_pair(opp->pos().dist(ball_pos), (opp->pos() - ball_pos).th().degree()));
+        opp_dist_body_diff.push_back(std::make_pair(opp->pos().dist(ball_pos), ((ball_pos - opp->pos()).th() - opp->body()).abs()));
         AngleDeg diff = (tm_pos - ball_pos).th() - (opp->pos() - ball_pos).th();
-        double diff_double = diff.abs();
-        opp_pass_angle_dist.push_back(std::make_pair(diff_double, opp->distFromBall()));
+        if (diff.abs() > 50)
+            continue;
+        if (opp->pos().dist(ball_pos) > tm_pos.dist(ball_pos) + 1.0)
+            continue;
+        opp_pass_angle_dist.push_back(std::make_pair(diff.abs(), opp->distFromBall()));
+        Vector2D proj_pos = Line2D(ball_pos, tm_pos).projection(opp->pos());
+        opp_pass_projection.push_back(std::make_pair(proj_pos.dist(opp->pos()), proj_pos.dist(ball_pos)));
+        opp_pass_projection_bodydiff.push_back(std::make_pair(proj_pos.dist(opp->pos()), ((proj_pos - opp->pos()).th() - opp->body()).abs()));
     }
     if (option.openAnglePass == side || option.openAnglePass == BOTH) {
         ADD_ELEM("pass_dist", convertor_dist(ball_pos.dist(tm_pos)));
         std::sort(opp_pass_angle_dist.begin(), opp_pass_angle_dist.end());
+        std::sort(opp_pass_projection.begin(), opp_pass_projection.end());
+        std::sort(opp_pass_projection_bodydiff.begin(), opp_pass_projection_bodydiff.end());
         if (opp_pass_angle_dist.size() >= 1){
             ADD_ELEM("pass_opp1_dist", convertor_dist(opp_pass_angle_dist[0].second));
             ADD_ELEM("pass_opp1_angle", convertor_angle(opp_pass_angle_dist[0].first));
+            ADD_ELEM("pass_opp1_dist_line", convertor_dist(opp_pass_projection[0].first));
+            ADD_ELEM("pass_opp1_dist_proj", convertor_dist(opp_pass_projection[0].second));
+            ADD_ELEM("pass_opp1_dist_diffbody", convertor_angle(opp_pass_projection_bodydiff[0].second));
         }
         else{
             ADD_ELEM("pass_opp1_dist", invalid_data);
             ADD_ELEM("pass_opp1_angle", invalid_data);
+            ADD_ELEM("pass_opp1_dist_line", invalid_data);
+            ADD_ELEM("pass_opp1_dist_proj", invalid_data);
+            ADD_ELEM("pass_opp1_dist_diffbody", invalid_data);
         }
         if (opp_pass_angle_dist.size() >= 2){
             ADD_ELEM("pass_opp2_dist", convertor_dist(opp_pass_angle_dist[1].second));
             ADD_ELEM("pass_opp2_angle", convertor_angle(opp_pass_angle_dist[1].first));
+            ADD_ELEM("pass_opp2_dist_line", convertor_dist(opp_pass_projection[1].first));
+            ADD_ELEM("pass_opp2_dist_proj", convertor_dist(opp_pass_projection[1].second));
+            ADD_ELEM("pass_opp2_dist_diffbody", convertor_angle(opp_pass_projection_bodydiff[1].second));
         }
         else{
             ADD_ELEM("pass_opp2_dist", invalid_data);
             ADD_ELEM("pass_opp2_angle", invalid_data);
+            ADD_ELEM("pass_opp2_dist_line", invalid_data);
+            ADD_ELEM("pass_opp2_dist_proj", invalid_data);
+            ADD_ELEM("pass_opp2_dist_diffbody", invalid_data);
         }
     }
     if (option.nearestOppDist == side || option.nearestOppDist == BOTH){
         std::sort(opp_dist_angle.begin(), opp_dist_angle.end());
+        std::sort(opp_dist_body_diff.begin(), opp_dist_body_diff.end());
         if (opp_dist_angle.size() >= 1){
             ADD_ELEM("opp1_dist", convertor_dist(opp_dist_angle[0].first));
             ADD_ELEM("opp1_angle", convertor_angle(opp_dist_angle[0].second));
+            ADD_ELEM("opp1_diffbody", convertor_angle(opp_dist_body_diff[0].second));
         }
         else{
             ADD_ELEM("opp1_dist", invalid_data);
             ADD_ELEM("opp1_angle", invalid_data);
+            ADD_ELEM("opp1_diffbody", invalid_data);
         }
         if (opp_dist_angle.size() >= 2){
             ADD_ELEM("opp2_dist", convertor_dist(opp_dist_angle[1].first));
             ADD_ELEM("opp2_angle", convertor_angle(opp_dist_angle[1].second));
+            ADD_ELEM("opp2_diffbody", convertor_angle(opp_dist_body_diff[1].second));
         }
         else{
             ADD_ELEM("opp2_dist", invalid_data);
             ADD_ELEM("opp2_angle", invalid_data);
+            ADD_ELEM("opp2_diffbody", invalid_data);
         }
     }
 }
@@ -1020,14 +1061,14 @@ double DataExtractor::convertor_x(double x) {
     if (!option.use_convertor)
         return x;
 //    return x / 52.5;
-    return (x + 52.5) / 105.0;
+    return std::min(std::max((x + 52.5) / 105.0, 0.0), 1.0);
 }
 
 double DataExtractor::convertor_y(double y) {
     if (!option.use_convertor)
         return y;
 //    return y / 34.0;
-    return (y + 34.0) / 68.0;
+    return std::min(std::max((y + 34) / 68.0, 0.0), 1.0);
 }
 
 double DataExtractor::convertor_dist(double dist) {
