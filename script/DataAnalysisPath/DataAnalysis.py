@@ -60,7 +60,7 @@ class DataAnalysis:
                 out.write(f"{state}\n")
 
     def find_function(self, state, type):
-        kicker_pos = Vector2D(state.kicker['px'], state.kicker['py'])
+        kicker_pos = Vector2D(state.kicker['pos_x'], state.kicker['pos_y'])
         if type == SortType.ANGLE_KICKER_GOAL:
             return sort_by_angle_kicker(state.kicker, (Vector2D(+52.5, 0) - kicker_pos).th().degree())
         elif type == SortType.ANGLE_KICKER:
@@ -75,9 +75,9 @@ class DataAnalysis:
 
 # sort functions:
 def sort_by_x(player):
-    if player['px'] == State.INVALID_DATA:
+    if player['pos_x'] == State.INVALID_DATA:
         return State.INVALID_DATA
-    return player['px']
+    return player['pos_x']
 
 
 def sort_by_unum(player):
@@ -90,14 +90,14 @@ def sort_by_angle_field_center():
 
 def sort_by_angle_kicker(relative_pos=None, relative_angle=0):  # FUNCTIONEHAAAAAAA :D
     if relative_pos is None:
-        relative_pos = {'px': 0, 'py': 0}
+        relative_pos = {'pos_x': 0, 'pos_y': 0}
 
     def sort(player):
 
-        if player['px'] == State.INVALID_DATA:
+        if player['pos_x'] == State.INVALID_DATA:
             return State.INVALID_DATA
-        center = Vector2D(relative_pos['px'], relative_pos['py'])
-        player_pos = Vector2D(player['px'], player['py'])
+        center = Vector2D(relative_pos['pos_x'], relative_pos['pos_y'])
+        player_pos = Vector2D(player['pos_x'], player['pos_y'])
         diff = (player_pos - center).th().degree() - relative_angle  # TODO ABS...?
         if diff > 180:
             diff = -(360 - diff)

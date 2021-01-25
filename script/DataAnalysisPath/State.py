@@ -62,20 +62,22 @@ def converter_count():
 
 class State:
     INVALID_DATA = -2
-    KICKER_BE_FIRST = True
+    KICKER_BE_FIRST = False
     CONVERTER_INV = {
         'cycle': converter_inv(6000, 0),
-        'ballpx': converter_x_inv(),
-        'ballpy': converter_y_inv(),
-        'ballrx': converter_x_inv(),
-        'ballry': converter_y_inv(),
-        'ballr': converter_dist_inv(),
-        'ballt': converter_angle_inv(),
-        'ballvx': converter_inv(6, 3),
-        'ballvy': converter_inv(6, 3),
-        'ballvr': converter_inv(3, 0),
-        'ballvt': converter_angle_inv(),
-        'ofside_count': converter_inv(1, 0),
+        'ball_pos_x': converter_x_inv(),
+        'ball_pos_y': converter_y_inv(),
+        'ball_kicker_x': converter_x_inv(),
+        'ball_kicker_y': converter_y_inv(),
+        'ball_kicker_r': converter_dist_inv(),
+        'ball_kicker_t': converter_angle_inv(),
+        'ball_pos_r': converter_dist_inv(),
+        'ball_pos_t': converter_angle_inv(),
+        'ball_vel_x': converter_inv(6, 3),
+        'ball_vel_y': converter_inv(6, 3),
+        'ball_vel_r': converter_inv(3, 0),
+        'ball_vel_t': converter_angle_inv(),
+        'offside_count': converter_inv(1, 0),
         'drible_angle': converter_dist_inv(),
         'side': converter_inv(),
         'unum': converter_inv(11),
@@ -94,50 +96,54 @@ class State:
         'tackling': converter_inv(),
         'kicking': converter_inv(),
         'card': converter_inv(),
-        'px': converter_x_inv(),
-        'py': converter_y_inv(),
-        'rx': converter_x_inv(),
-        'ry': converter_y_inv(),
-        'r': converter_dist_inv(),
-        't': converter_angle_inv(),
-        'in_ofside': converter_inv(),
-        'vx': converter_inv(3, 1.5),
-        'vy': converter_inv(3, 1.5),
-        'vr': converter_inv(1.5),
-        'vt': converter_angle_inv(),
+        'pos_x': converter_x_inv(),
+        'pos_y': converter_y_inv(),
+        'kicker_x': converter_x_inv(),
+        'kicker_y': converter_y_inv(),
+        'kicker_r': converter_dist_inv(),
+        'kicker_t': converter_angle_inv(),
+        'pos_r': converter_dist_inv(),
+        'pos_t': converter_angle_inv(),  # todo pos r,t ?
+        'in_offside': converter_inv(),
+        'vel_x': converter_inv(3, 1.5),
+        'vel_y': converter_inv(3, 1.5),
+        'vel_r': converter_inv(1.5),
+        'vel_t': converter_angle_inv(),
         'poscount': converter_count_inv(),
         'velcount': converter_count_inv(),
-        'iskicker': converter_inv(),
-        'passangle': converter_angle_inv(),
-        'dpassdist': converter_dist_inv(),
+        'is_kicker': converter_inv(),
+        'pass_angle': converter_angle_inv(),
+        'pass_dist': converter_dist_inv(),
         'nearoppdist': converter_dist_inv(),
-        'angleGCr_angleGCr': converter_dist_inv(),
-        'angleGCt_angleGCt': converter_angle_inv(),
+        'angle_goal_center_r': converter_dist_inv(),
+        'angle_goal_center_t': converter_angle_inv(),
         'openGAngle_openGAngle': converter_angle_inv(),
         'stamina': converter_inv(8000),
         'stamina_count': converter_count_inv(),
         'out_category': converter_inv(),
-        'out_targetx': converter_inv(),
-        'out_targety': converter_inv(),
+        'out_target_x': converter_inv(),
+        'out_target_y': converter_inv(),
         'out_unum': converter_inv(),
         'out_unum_index': converter_inv(),
         'out_ball_speed': converter_inv(),
-        ' out_ball_dir': converter_angle_inv(),
+        'out_ball_dir': converter_angle_inv(),
         'out_desc': converter_inv(),
     }
     CONVERTER = {
         'cycle': converter(6000, 0),
-        'ballpx': converter_x(),
-        'ballpy': converter_y(),
-        'ballrx': converter_x(),
-        'ballry': converter_y(),
-        'ballr': converter_dist(),
-        'ballt': converter_angle(),
-        'ballvx': converter(6, 3),
-        'ballvy': converter(6, 3),
-        'ballvr': converter(3, 0),
-        'ballvt': converter_angle(),
-        'ofside_count': converter(1, 0),
+        'ball_pos_x': converter_x(),
+        'ball_pos_y': converter_y(),
+        'ball_kicker_x': converter_x(),
+        'ball_kicker_y': converter_y(),
+        'ball_kicker_r': converter_dist(),
+        'ball_kicker_t': converter_angle(),
+        'ball_pos_r': converter_dist(),
+        'ball_pos_t': converter_angle(),
+        'ball_vel_x': converter(6, 3),
+        'ball_vel_y': converter(6, 3),
+        'ball_vel_r': converter(3, 0),
+        'ball_vel_t': converter_angle(),
+        'offside_count': converter(1, 0),
         'drible_angle': converter_dist(),
         'side': converter(),
         'unum': converter(11),
@@ -156,35 +162,37 @@ class State:
         'tackling': converter(),
         'kicking': converter(),
         'card': converter(),
-        'px': converter_x(),
-        'py': converter_y(),
-        'rx': converter_x(),
-        'ry': converter_y(),
-        'r': converter_dist(),
-        't': converter_angle(),
-        'in_ofside': converter(),
-        'vx': converter(3, 1.5),
-        'vy': converter(3, 1.5),
-        'vr': converter(1.5),
-        'vt': converter_angle(),
+        'pos_x': converter_x(),
+        'pos_y': converter_y(),
+        'kicker_x': converter_x(),
+        'kicker_y': converter_y(),
+        'kicker_r': converter_dist(),
+        'kicker_t': converter_angle(),
+        'pos_r': converter_dist(),
+        'pos_t': converter_angle(),  # todo pos r,t ?
+        'in_offside': converter(),
+        'vel_x': converter(3, 1.5),
+        'vel_y': converter(3, 1.5),
+        'vel_r': converter(1.5),
+        'vel_t': converter_angle(),
         'poscount': converter_count(),
         'velcount': converter_count(),
-        'iskicker': converter(),
-        'passangle': converter_angle(),
-        'dpassdist': converter_dist(),
+        'is_kicker': converter(),
+        'pass_angle': converter_angle(),
+        'pass_dist': converter_dist(),
         'nearoppdist': converter_dist(),
-        'angleGCr_angleGCr': converter_dist(),
-        'angleGCt_angleGCt': converter_angle(),
+        'angle_goal_center_r': converter_dist(),
+        'angle_goal_center_t': converter_angle(),
         'openGAngle_openGAngle': converter_angle(),
         'stamina': converter(8000),
         'stamina_count': converter_count(),
         'out_category': converter(),
-        'out_targetx': converter(),
-        'out_targety': converter(),
+        'out_target_x': converter(),
+        'out_target_y': converter(),
         'out_unum': converter(),
         'out_unum_index': converter(),
         'out_ball_speed': converter(),
-        ' out_ball_dir': converter_angle(),
+        'out_ball_dir': converter_angle(),
         'out_desc': converter(),
     }
 
@@ -208,6 +216,7 @@ class State:
             data[h] = v
 
         self.set_cycle(data)
+        print(self.cycle)
 
         self.set_others(data)
 
@@ -233,18 +242,26 @@ class State:
                     continue
 
                 player = {}
+                side = 1 if j == 0 else -1
                 for key in keys:
-                    player[key[len(start_key):]] = State.CONVERTER_INV[key[len(start_key):]](float(data[key]))
+                    if key[len(start_key):].startswith("pass_opp") \
+                            or key[len(start_key):].startswith("near"):
+                        if key.endswith("dist") or key.endswith("line") or key.endswith("proj"):
+                            player[key[len(start_key):]] = State.CONVERTER_INV['pass_dist'](float(data[key]))
+                        elif key.endswith("angle") or key.endswith("diffbody"):
+                            player[key[len(start_key):]] = State.CONVERTER_INV['pass_angle'](float(data[key]))
+                    else:
+                        player[key[len(start_key):]] = State.CONVERTER_INV[key[len(start_key):]](float(data[key]))
                 player['unum'] = round(player['unum'])
-                player['side'] = round(player['side'])
-                player['iskicker'] = round(player['iskicker'])
-                if player["side"] == -1:
+                if side == 1:
+                    player['is_kicker'] = round(player['is_kicker'])
+                if side == -1:
                     self.opponents.append(player)
                     if 11 < player['unum'] or player['unum'] < 1:
                         player['unum'] = oppu.pop(0)
                     else:
                         oppu.pop(oppu.index(player['unum']))
-                elif player["side"] == 1:
+                elif side == 1:
                     self.teammates.append(player)
 
                     if 11 < player['unum'] or player['unum'] < 1:
@@ -254,7 +271,7 @@ class State:
 
                     if player['unum'] == self.output['unum']:
                         self.target_player = player
-                    if player["iskicker"] == 1:
+                    if side and player["is_kicker"] == 1:
                         self.kicker = player
 
     def set_output(self, data):
@@ -286,7 +303,7 @@ class State:
             self.ball[key[len(start_key):]] = State.CONVERTER_INV[key](float(data[key]))
 
         # OFFSIDE COUNT and drible feature
-        other_keys = ['ofside_count'] + [key for key in data.keys() if key.strip(' ').startswith('drible_angle')]
+        other_keys = ['offside_count'] + [key for key in data.keys() if key.strip(' ').startswith('drible_angle')]
         for key in other_keys:
             if key.startswith('drible_angle'):
                 self.other[key] = State.CONVERTER_INV['drible_angle'](float(data[key]))
@@ -306,7 +323,14 @@ class State:
 
         for p in self.teammates:
             for k in p:
-                p[k] = State.CONVERTER[k](p[k])
+                if k.startswith("pass_opp") \
+                        or k.startswith("near"):
+                    if k.endswith("dist") or k.endswith("line") or k.endswith("proj"):
+                        p[k] = State.CONVERTER['pass_dist'](p[k])
+                    elif k.endswith("angle") or k.endswith("diffbody"):
+                        p[k] = State.CONVERTER['pass_angle'](p[k])
+                else:
+                    p[k] = State.CONVERTER[k](p[k])
 
         for p in self.opponents:
             for k in p:
@@ -325,6 +349,15 @@ class State:
         for p in self.teammates + self.opponents:
             o += f"{','.join([str(d) for d in p.values()])},"
         o += f"{','.join([str(d) for d in self.output.values()])},"
+        return o
+
+    def headers(self):
+        o = (['cycle']
+             + [f"ball{k}" for k in self.ball.keys()]
+             + list(self.other.keys())
+             + [f"p_l_1_{k}" for k in self.teammates[0].keys()]
+             + [f"p_r_1_{k}" for k in self.opponents[0].keys()]
+             + list(self.output.keys()))
         return o
 
     def randomize(self, randomize):
