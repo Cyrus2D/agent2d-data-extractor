@@ -9,8 +9,9 @@ c = time.time()
 # todo optimize normalizer
 
 analysis = DataAnalysis("../data/aref.csv",
-                        "../data/aref.org.csv",
+                        "../data/aref.rand.csv",
                         normalize=False,
+                        randomize=0.1,
                         sort_type=SortType.X)
 
 print(time.time() - c)

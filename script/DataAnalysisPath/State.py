@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, random
 
 import numpy as np
 from PIL import Image
@@ -360,18 +360,18 @@ class State:
              + list(self.output.keys()))
         return o
 
-    def randomize(self, randomize):
+    def randomize(self, randomize: float):
         for players in ['tm', 'opp']:
             valid_players = self.valid_teammates() if players == 'tm' else self.valid_opponents()
-            if len(valid_players) % 2 == 1:
-                valid_players += [valid_players[randint(0, len(valid_players) - 1)]]
-            rand = min(randomize, int(len(valid_players) / 2))
-
-            for i in range(rand):
-                u1 = valid_players.pop(randint(0, len(valid_players) - 1))
-                u2 = valid_players.pop(randint(0, len(valid_players) - 1))
-
-                self.swap_players(players, u1, u2)
+            for p in valid_players:
+                if random() < randomize:
+                    new_unum = randint(1, 11)
+                    print(f"RANDOMIZE {self.cycle}: {p['unum']}, {new_unum}")
+                    if p['unum'] == self.output['unum']:
+                        self.output['unum'] = new_unum
+                    elif new_unum == self.output['unum']:
+                        self.output['unum'] = p['unum']
+                    self.swap_players(players, p['unum'], new_unum)
 
     def swap_players(self, players, u1, u2):
         players = self.teammates if players == 'tm' else self.opponents
@@ -386,9 +386,9 @@ class State:
         unum = []
 
         for p in self.teammates:
-            if p['px'] == State.INVALID_DATA:
+            if p['pos_x'] == State.INVALID_DATA:
                 break
-            unum.append(p['unum'])
+            unum.append(p)
 
         return unum
 
@@ -396,9 +396,9 @@ class State:
         unum = []
 
         for p in self.opponents:
-            if p['px'] == State.INVALID_DATA:
+            if p['pos_x'] == State.INVALID_DATA:
                 break
-            unum.append(p['unum'])
+            unum.append(p)
 
         return unum
 
