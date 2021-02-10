@@ -4,15 +4,16 @@ import pandas as pd
 import numpy as np
 
 # params
-
+show_img = True
 save_img = False
-save_npa = True
+save_npa = False
 
-field_size_X = 512  #  x axis size
-field_size_Y = 320  #  y axis size
+
+field_size_X = 256  #  x axis size
+field_size_Y = 160  #  y axis size
 
 ball_size = 4  # ball radius pixels
-player_size_multiplier = 14  # KickAble_Area multiplier
+player_size_multiplier = 10  # KickAble_Area multiplier
 
 use_background = False  # use soc cerwindow background
 solid_field_color = "black"  # Change for BG_color
@@ -25,12 +26,14 @@ use_body_angle = True  # draw an arc for body
 body_angle_size = 4  # body angle multiplier
 body_angle_color = "black"
 
+use_transparent = False
 use_color_range_our = True
-use_color_range_opp = False
+use_color_range_opp = True
 main_color_jump = 5  # main color get decrised over palyer numbers
+transparent_alpha = 150  # transparent_alpha 0 - 255
 
 data = pd.read_csv(f"g:/SW_pic/test.csv")  # Load Data
-image_count = data.count()[0]  # number of image
+image_count = 2  # data.count()[0]  # number of image
 
 if use_background:  # use background
     temp_img = Image.open(f"g:/SW_pic/back-full.jpg")
@@ -40,6 +43,7 @@ else:
 
 if save_npa:
     np_images = np.zeros((image_count, field_size_Y, field_size_X, 3))
+label = np.zeros(image_count)
 
 if use_goals:  # mark the goals out
     temp_draw = ImageDraw.Draw(temp_img)
@@ -67,7 +71,7 @@ for i in range(image_count):
 
     # set image
     img = Image.open(f"g:/SW_pic/temp_img.jpg")
-    draw = ImageDraw.Draw(img)
+    draw = ImageDraw.Draw(img, "RGBA")
 
     # Draw OppPlayers
     for u in range(1, 12):
@@ -82,9 +86,14 @@ for i in range(image_count):
                 player_x + plyer_ka,
                 player_y + plyer_ka,
             ),
-            fill=(0, 2 + 23 * u, 255 - main_color_jump * u)
+            fill=(
+                0,
+                2 + 23 * u,
+                255 - main_color_jump * u,
+                255 if use_transparent else transparent_alpha,
+            )
             if use_color_range_opp
-            else (0, 2, 255),
+            else (0, 2, 255, 255 if use_transparent else transparent_alpha),
         )
         if use_body_angle:
             player_body = dp[f"p_r_{u}_body"] * 360
@@ -99,6 +108,24 @@ for i in range(image_count):
                 player_body + body_angle_size + 180,
                 fill=body_angle_color,
             )
+            draw.arc(
+                (
+                    player_x - plyer_ka,
+                    player_y - plyer_ka,
+                    player_x + plyer_ka,
+                    player_y + plyer_ka,
+                ),
+                player_body - body_angle_size + 180,
+                player_body + body_angle_size + 180,
+                fill=(
+                    0,
+                    2 + 23 * u,
+                    255 - main_color_jump * u,
+                    255 if use_transparent else transparent_alpha,
+                )
+                if use_color_range_opp
+                else (0, 2, 255, 255 if use_transparent else transparent_alpha),
+            )
 
     # Draw OurPlayers
     for u in range(1, 12):
@@ -112,9 +139,14 @@ for i in range(image_count):
                 player_x + plyer_ka,
                 player_y + plyer_ka,
             ),
-            fill=(255 - main_color_jump * u, 2 + 23 * u, 0)
+            fill=(
+                255 - main_color_jump * u,
+                2 + 23 * u,
+                0,
+                255 if use_transparent else transparent_alpha,
+            )
             if use_color_range_our
-            else (255, 2, 0),
+            else (255, 2, 0, 255 if use_transparent else transparent_alpha),
         )
         if use_body_angle:
             player_body = dp[f"p_l_{u}_body"] * 360
@@ -128,6 +160,24 @@ for i in range(image_count):
                 player_body - body_angle_size + 180,
                 player_body + body_angle_size + 180,
                 fill=body_angle_color,
+            )
+            draw.arc(
+                (
+                    player_x - plyer_ka,
+                    player_y - plyer_ka,
+                    player_x + plyer_ka,
+                    player_y + plyer_ka,
+                ),
+                player_body - body_angle_size + 180,
+                player_body + body_angle_size + 180,
+                (
+                    255 - main_color_jump * u,
+                    2 + 23 * u,
+                    0,
+                    255 if use_transparent else transparent_alpha,
+                )
+                if use_color_range_our
+                else (255, 2, 0, 255 if use_transparent else transparent_alpha),
             )
 
     # Draw Ball
@@ -143,10 +193,17 @@ for i in range(image_count):
         fill=ball_color,
     )
 
-    # image save
-    # img.show()
+    label[i] = dp["out_unum"]
+
+    # if i == 1:
+    #     img.save(f"g:/SW_pic/pic/sb_{i}.jpg")
+    # if i == 0:
+    #     img.save(f"g:/SW_pic/pic/sb_{i}.jpg")
+
+    if show_img:
+        img.show()
     if save_img:
-        img.save(f"g:/SW_pic/pic/{i}.jpg")
+        img.save(f"g:/SW_pic/pic/s_{i}.jpg")
     if save_npa:
         # PIL images into NumPy arrays
         np_images[i] = np.asarray(img)
@@ -155,5 +212,6 @@ if save_npa:
     np.save(f"g:/SW_pic/np_img.npy", np_images)
     print(np_images.shape)
 
+np.save(f"g:/SW_pic/img_label.npy", label)
 # DONE
 print("done")
