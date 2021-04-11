@@ -188,7 +188,7 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
-    std::string dir = "/home/nader/data/robo_data/";
+    std::string dir = "/home/nader/data/robo_data/other_team/";
     strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H-%M-%S", timeinfo);
     std::string str(buffer);
     std::string rand_name = std::to_string(SamplePlayer::player_port);
@@ -211,9 +211,10 @@ void DataExtractor::init_file(const rcsc::WorldModel &wm) {
     header += "offside_count,";
 
     // Kicker
-    for (int i = 0; i < option.nDribleAngle; i++) {
-        header += "dribble_angle_" + std::to_string(i) + ",";
-    }
+    if (option.dribleAngle == Kicker)
+        for (int i = 0; i < option.nDribleAngle; i++) {
+            header += "dribble_angle_" + std::to_string(i) + ",";
+        }
 
     for (int i = 1; i <= 11; i++) {
         if (option.side == TM || option.side == BOTH)
@@ -1028,6 +1029,8 @@ void DataExtractor::extract_history(const rcsc::AbstractPlayerObject *player, Da
 void DataExtractor::extract_drible_angles(const WorldModel &wm) {
 
 //    const PlayerObject *kicker = wm.interceptTable()->fastestTeammate(); // TODO What is error ?!?!
+    if (option.dribleAngle != Kicker)
+        return;
     const AbstractPlayerObject *kicker = wm.ourPlayer(wm.self().unum());
     if (kicker == NULL || kicker->unum() < 0) {
         for (int i = 1; i <= option.nDribleAngle; i++)
@@ -1196,33 +1199,33 @@ Polar::Polar(rcsc::Vector2D p) {
 }
 
 DataExtractor::Option::Option() {
-    side = BOTH;
+    side = NONE;
     unum = BOTH;
     type = BOTH;
     body = BOTH;
     face = BOTH;
-    tackling = BOTH;
-    kicking = BOTH;
-    card = BOTH;
+    tackling = NONE;
+    kicking = NONE;
+    card = NONE;
     pos = BOTH;
     relativePos = BOTH;
     polarPos = BOTH;
     vel = BOTH;
     polarVel = BOTH;
-    counts = BOTH;
-    isKicker = BOTH;
+    counts = NONE;
+    isKicker = TM;
     openAnglePass = TM;
     nearestOppDist = TM;
     polarGoalCenter = TM;
-    openAngleGoal = TM;
+    openAngleGoal = NONE;
     in_offside = TM;
 
-    dribleAngle = Kicker;
+    dribleAngle = NONE;
     nDribleAngle = 12;
     history_size = 0;
     input_worldMode = FULLSTATE;
     output_worldMode = FULLSTATE;
-    playerSortMode = RANDOM;
-    kicker_first = true;
+    playerSortMode = UNUM;
+    kicker_first = false;
     use_convertor = true;
 }
