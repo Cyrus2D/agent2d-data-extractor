@@ -59,18 +59,32 @@ def merger_all_to_unum_big(read_path, save_path, i, x):
     print(dfs.count())
 
 
-def merger(read_path, save_path, i):
+def merger_from_to(read_path, save_path, f):
+    org_df = pd.read_csv(read_path)
+    print('org', org_df.count()[0])
+    for t in range(1, 12):
+        df = org_df[org_df[f'out_unum'] == t]
+        print('df', t, df.count()[0])
+        if df.columns[-1] != 'out_desc':
+            del df[df.columns[-1]]
+        df.dropna(inplace=True)
+        df = df.reset_index()
+        del df['index']
+        try:
+            del df['Unnamed: 0']
+        except:
+            pass
+        df.to_csv(save_path + f'to_{t}_from_{f}.csv')
+        print('merged', f, t)
 
-    # return
+
+def merger(read_path, save_path):
     dfs = None
-    list_file = [f'from_{f}.csv' for f in range(11, 0, -1)]
-    for f in list_file:#os.listdir(read_path):
-        # if f.find(f'_{i}__') == -1:
-        #     continue
+    for f in os.listdir(read_path):
         print('read' + f)
         df = pd.read_csv(os.path.join(read_path, f))#.iloc[:20000]
-        df = df[df[f'out_unum'] == i]
-        # df = df[df['out_category'] == 2]
+        # df = df[df[f'out_unum'] == i]
+        df = df[df['out_category'] == 2]
         if dfs is None:
             dfs = df
         else:
@@ -90,15 +104,26 @@ def merger(read_path, save_path, i):
         pass
     dfs.to_csv(save_path)
 
+def merger_multiprocess():
+
+merger('/home/nader/data/robo_data/other_team/', '/home/nader/data/robo_data/other.csv')
+# read_path =      '/home/nader/data/robo_data/all_data/'
+# save_file_path = f'/home/nader/data/robo_data/from_i/from_{i}.csv'
+# merger_all_to_unum_small(read_path, save_file_path, i)
 
 # for i in range(1, 9):
 #     read_path =      '/home/nader/data/robo_data/all_data/'
 #     save_file_path = f'/home/nader/data/robo_data/from_i/from_{i}.csv'
 #     merger_all_to_unum_small(read_path, save_file_path, i)
-for i in range(1, 12):
-    read_path =      '/home/nader/data/robo_data/all_data/'
-    for x in range(4):
-        save_file_path = f'/home/nader/data/robo_data/from_i/from_{i}_{x}.csv'
-        merger_all_to_unum_big(read_path, save_file_path, i, x)
+
+# for i in range(1, 12):
+#     read_path =      '/home/nader/data/robo_data/all_data/'
+#     for x in range(0, 7):
+#         save_file_path = f'/home/nader/data/robo_data/from_i/from_{i}_{x}.csv'
+#         merger_all_to_unum_big(read_path, save_file_path, i, x)
+
 # for i in range(5):
 #     merger(read_path + str(i), save_file_path + 'all_' + str(i) + '.csv')
+
+# for f in range(1, 12):
+#     merger_from_to(f'/home/nader/data/robo_data/from_i/from_{f}_0.csv', f'/home/nader/data/robo_data/to_i/', f)
