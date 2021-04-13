@@ -49,13 +49,14 @@
 
 #include "neck_offensive_intercept_neck.h"
 
+#define UNMARK_DEBUG
+
 using namespace rcsc;
 
 
 Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
     this->who = _who;
     this->where = _where;
-
 
     if (this->who == EVERYONE)
         am_i_the_one = &Unmark::who_everyone;
@@ -90,10 +91,19 @@ Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
 }
 
 bool Unmark::execute(PlayerAgent *agent) {
+    std::cout << "UNMARK" << std::endl;
     const WorldModel &wm = agent->world();
+
+    const AbstractPlayerObject *kicker = wm.interceptTable()->fastestTeammate();
+    if (kicker == nullptr || kicker->unum() < 1)
+        return false;
+    this->kicker_unum = kicker->unum();
+
     if (!(this->*am_i_the_one)(wm))
         return false;
+    std::cout << "am i the one done" << std::endl;
     Vector2D target = (this->*where_should_i_go)(wm);
+    std::cout << "where should i go done" << std::endl;
 
     if (!target.isValid())
         return false;
@@ -296,7 +306,7 @@ rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
-            double value = get_value_from_nn(wm);
+            double value = get_value_from_dnn(wm, new_self_pos);
 
             if (value > max_value) {
                 best_pos = new_self_pos;
@@ -316,7 +326,7 @@ rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
     double max_value = -100;
     Vector2D best_pos = Vector2D().invalidate();
 
-    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+    for (int i_dist = 1; i_dist <= n_dist; i_dist++) {
         const double dist = (double) i_dist * dist_step;
 
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
@@ -325,7 +335,7 @@ rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
 
             int diff = simulate_pass(wm, new_self_pos);
             if (diff > 0) {
-                double value = get_value_from_nn(wm);
+                double value = get_value_from_dnn(wm, new_self_pos);
 
                 if (value > max_value) {
                     best_pos = new_self_pos;
@@ -355,6 +365,88 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, cons
 }
 
 int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
+    std::cout << "A" << std::endl;
+    const AbstractPlayerObject *kicker = wm.ourPlayer(this->kicker_unum);
+    Vector2D ball_pos = wm.ball().pos();
+
+    double ball_reach_vel = 1;
+    double dist = wm.ball().pos().dist(new_self_pos);
+    while (dist > 0) {
+        dist -= ball_reach_vel;
+        ball_reach_vel /= ServerParam::i().ballDecay();
+    }
+    std::cout << "B" << std::endl;
+
+    Vector2D ball_vel = Vector2D::polar2vector(ball_reach_vel, (new_self_pos - ball_pos).th());
+    ball_pos += ball_vel;
+    ball_vel *= ServerParam::i().ballDecay();
+    int min_diff = 100;
+    int cycle = 1;
+    while (cycle < 40) {
+        std::cout << "C" << std::endl;
+
+        if (ball_pos.dist(new_self_pos) < 1.1)
+            break;
+
+        for (int i = 1; i <= 11; i++) {
+            std::cout << "D" << std::endl;
+            const AbstractPlayerObject *opp = wm.theirPlayer(i);
+            if (opp == nullptr || opp->unum() < 0)
+                continue;
+            auto ptype = opp->playerTypePtr();
+
+            int n_turn = 0;
+
+            double my_speed = opp->vel().r();
+            double dir_diff = (opp->body() - (ball_pos - opp->pos()).th()).abs();
+            while (dir_diff > 10.0) {
+                dir_diff -= ptype->effectiveTurn(ServerParam::i().maxMoment(), my_speed);
+                if (dir_diff < 0.0) dir_diff = 0.0;
+                my_speed *= ptype->playerDecay();
+                ++n_turn;
+            }
+
+            int n_dash = ptype->cyclesToReachDistance(opp->pos().dist(ball_pos));
+            const int opp_cycle = n_dash + n_turn;
+
+            int diff = opp_cycle - cycle;
+            if (diff < 0) {
+#ifdef UNMARK_DEBUG
+                dlog.addText(Logger::MARK,
+                             "new_self_pos(%f.2, %f.2) failed at(%f.2, %f.2), opp%d: ball_cycle(%d), opp_cycle(%d)",
+                             new_self_pos.x,
+                             new_self_pos.y,
+                             ball_pos.x,
+                             ball_pos.y,
+                             opp->unum(),
+                             cycle,
+                             opp_cycle);
+#endif
+                return diff;
+            }
+            if (diff < min_diff) {
+                min_diff = diff;
+            }
+        }
+
+        ball_pos += ball_vel;
+        ball_vel *= ServerParam::i().ballDecay();
+        cycle++;
+    }
+    std::cout << "F" << std::endl;
+
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "new_self_pos(%f.2, %f.2) succeed, min_diff: %d",
+                 new_self_pos.x,
+                 new_self_pos.y,
+                 min_diff);
+    dlog.addCircle(Logger::MARK, new_self_pos,0.2,"#000000", true);
+#endif
+
+    return min_diff;
+}
+
+double Unmark::get_value_from_dnn(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
     return 0;
 }
 
@@ -396,6 +488,10 @@ Bhv_BasicMove::execute(PlayerAgent *agent) {
 
         return true;
     }
+
+    if (mate_min < self_min && mate_min < opp_min + 2)
+        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM_DIFF).execute(agent))
+            return true;
 
     const Vector2D target_point = Strategy::i().getPosition(wm.self().unum());
     const double dash_power = Strategy::get_normal_dash_power(wm);

@@ -66,12 +66,13 @@ public:
 public:
     Who who;
     Where where;
+    int kicker_unum;
+
+    Unmark(Who _who, Where _where);
 
     bool (Unmark::*am_i_the_one)(const rcsc::WorldModel &);
 
     rcsc::Vector2D (Unmark::*where_should_i_go)(const rcsc::WorldModel &);
-
-    Unmark(Who _who, Where _where);
 
     bool execute(rcsc::PlayerAgent *agent);
 
@@ -109,6 +110,8 @@ public:
     std::pair<int, int> get_2_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
 
     int simulate_pass(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
+
+    double get_value_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
 };
 
 
