@@ -99,6 +99,16 @@ public:
     rcsc::Vector2D where_pass_sim_diff(const rcsc::WorldModel &wm);
 
     rcsc::Vector2D where_pass_sim_nn(const rcsc::WorldModel &wm);
+
+    int get_unum_from_dnn(const rcsc::WorldModel &wm);
+
+    std::pair<int, int> get_2_unum_from_dnn(const rcsc::WorldModel &wm);
+
+    int get_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
+
+    std::pair<int, int> get_2_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
+
+    int simulate_pass(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
 };
 
 

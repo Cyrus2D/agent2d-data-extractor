@@ -90,10 +90,13 @@ Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
 }
 
 bool Unmark::execute(PlayerAgent *agent) {
-    const WorldModel& wm = agent->world();
+    const WorldModel &wm = agent->world();
     if (!(this->*am_i_the_one)(wm))
         return false;
     Vector2D target = (this->*where_should_i_go)(wm);
+
+    if (!target.isValid())
+        return false;
     if (Body_GoToPoint(target, 0.5, 100).execute(agent))
         return true;
     if (Body_TurnToPoint(target).execute(agent))
@@ -101,54 +104,259 @@ bool Unmark::execute(PlayerAgent *agent) {
     return false;
 }
 
+bool Unmark::who_everyone(const WorldModel &wm) {
+    return true;
+}
+
 bool Unmark::who_nearest(const WorldModel &wm) {
+    int unum = -1;
+    double min_dist = 10000;
+    for (int i = 1; i <= 11; i++) {
+        const AbstractPlayerObject *tm = wm.ourPlayer(i);
+        if (tm == nullptr || tm->unum() < 1)
+            continue;
+
+        double dist = tm->distFromBall();
+        if (dist < min_dist) {
+            min_dist = dist;
+            unum = i;
+        }
+    }
+    if (unum == wm.self().unum())
+        return true;
+    return false;
+}
+
+
+bool Unmark::who_2_nearest(const WorldModel &wm) {
+    int unum2 = -1;
+    double min_dist2 = 10000;
+    int unum = -1;
+    double min_dist = 10000;
+    for (int i = 1; i <= 11; i++) {
+        const AbstractPlayerObject *tm = wm.ourPlayer(i);
+        if (tm == nullptr || tm->unum() < 1)
+            continue;
+
+        double dist = tm->distFromBall();
+        if (dist < min_dist2) {
+            min_dist2 = dist;
+            unum2 = i;
+        }
+        if (dist < min_dist) {
+            min_dist2 = min_dist;
+            unum2 = unum;
+            min_dist = dist;
+            unum = i;
+        }
+    }
+    if (unum == wm.self().unum() || unum2 == wm.self().unum())
+        return true;
     return false;
 }
 
 bool Unmark::who_nn(const WorldModel &wm) {
-    return false;
-}
-
-rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
-    return rcsc::Vector2D();
-}
-
-rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
-    return rcsc::Vector2D();
-}
-
-rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
-    return rcsc::Vector2D();
-}
-
-rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
-    return rcsc::Vector2D();
-}
-
-rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
-    return rcsc::Vector2D();
-}
-
-bool Unmark::who_2_nearest(const WorldModel &wm) {
+    int unum = get_unum_from_dnn(wm);
+    if (unum == wm.self().unum())
+        return true;
     return false;
 }
 
 bool Unmark::who_2_nn(const WorldModel &wm) {
+    std::pair<int, int> unums = get_2_unum_from_dnn(wm);
+    if (unums.first == wm.self().unum() || unums.second == wm.self().unum())
+        return true;
     return false;
 }
 
 bool Unmark::who_pnn(const WorldModel &wm) {
+    const double dist = 5;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    for (int i = 0; i < n_angle; i++) {
+        const double angle = (double) i * angle_step;
+        const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+        if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
+            continue;
+
+        int unum = get_unum_from_dnn(wm, new_self_pos);
+        if (unum == wm.self().unum())
+            return true;
+    }
     return false;
 }
 
 bool Unmark::who_2_pnn(const WorldModel &wm) {
+    const double dist = 5;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    for (int i = 0; i < n_angle; i++) {
+        double angle = (double) i * angle_step;
+        const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+        if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
+            continue;
+
+        std::pair<int, int> unums = get_2_unum_from_dnn(wm, new_self_pos);
+        if (unums.first == wm.self().unum() || unums.second == wm.self().unum())
+            return true;
+    }
     return false;
 }
 
-bool Unmark::who_everyone(const WorldModel &wm) {
-    return false;
+
+rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
+    const double n_dist = 2.;
+    const double dist_step = 5. / n_dist;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+        const double dist = (double) i_dist * dist_step;
+
+        for (int i_angle = 0; i_angle < n_angle; i_angle++) {
+            const double angle = (double) i_angle * angle_step;
+            const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            int diff = simulate_pass(wm, new_self_pos);
+            if (diff > 0)
+                return new_self_pos;
+        }
+    }
+    return Vector2D().invalidate();
+
 }
 
+rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
+    const double n_dist = 2.;
+    const double dist_step = 5. / n_dist;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    int max_diff = 0;
+    Vector2D best_pos = Vector2D().invalidate();
+
+    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+        const double dist = (double) i_dist * dist_step;
+
+        for (int i_angle = 0; i_angle < n_angle; i_angle++) {
+            const double angle = (double) i_angle * angle_step;
+            const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            int diff = simulate_pass(wm, new_self_pos);
+
+            if (diff > max_diff) {
+                best_pos = new_self_pos;
+                max_diff = diff;
+            }
+        }
+    }
+    return best_pos;
+}
+
+rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
+    const double n_dist = 2.;
+    const double dist_step = 5. / n_dist;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    int max_diff = 0;
+    Vector2D best_pos = Vector2D().invalidate();
+
+    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+        const double dist = (double) i_dist * dist_step;
+
+        for (int i_angle = 0; i_angle < n_angle; i_angle++) {
+            const double angle = (double) i_angle * angle_step;
+            const Vector2D new_self_pos = Strategy::i().getPosition(wm.self().unum())
+                                          + Vector2D::polar2vector(dist, angle);
+            int diff = simulate_pass(wm, new_self_pos);
+
+            if (diff > max_diff) {
+                best_pos = new_self_pos;
+                max_diff = diff;
+            }
+        }
+    }
+    return best_pos;
+
+}
+
+rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
+    const double n_dist = 2.;
+    const double dist_step = 5. / n_dist;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    double max_value = -100;
+    Vector2D best_pos = Vector2D().invalidate();
+
+    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+        const double dist = (double) i_dist * dist_step;
+
+        for (int i_angle = 0; i_angle < n_angle; i_angle++) {
+            const double angle = (double) i_angle * angle_step;
+            const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            double value = get_value_from_nn(wm);
+
+            if (value > max_value) {
+                best_pos = new_self_pos;
+                max_value = value;
+            }
+        }
+    }
+    return best_pos;
+}
+
+rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
+    const double n_dist = 2.;
+    const double dist_step = 5. / n_dist;
+    const double n_angle = 10.;
+    const double angle_step = 360. / n_angle;
+
+    double max_value = -100;
+    Vector2D best_pos = Vector2D().invalidate();
+
+    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+        const double dist = (double) i_dist * dist_step;
+
+        for (int i_angle = 0; i_angle < n_angle; i_angle++) {
+            const double angle = (double) i_angle * angle_step;
+            const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+
+            int diff = simulate_pass(wm, new_self_pos);
+            if (diff > 0) {
+                double value = get_value_from_nn(wm);
+
+                if (value > max_value) {
+                    best_pos = new_self_pos;
+                    max_value = value;
+                }
+            }
+        }
+    }
+    return best_pos;
+
+}
+
+int Unmark::get_unum_from_dnn(const WorldModel &wm) {
+    return 0;
+}
+
+std::pair<int, int> Unmark::get_2_unum_from_dnn(const WorldModel &wm) {
+    return std::pair<int, int>();
+}
+
+int Unmark::get_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos) {
+    return 0;
+}
+
+std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos) {
+    return std::pair<int, int>();
+}
+
+int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
+    return 0;
+}
 
 /*-------------------------------------------------------------------*/
 /*!
