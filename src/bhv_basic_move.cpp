@@ -51,74 +51,169 @@
 
 using namespace rcsc;
 
+
+Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
+    this->who = _who;
+    this->where = _where;
+
+
+    if (this->who == EVERYONE)
+        am_i_the_one = &Unmark::who_everyone;
+    else if (this->who == NEAREST)
+        am_i_the_one = &Unmark::who_nearest;
+    else if (this->who == TWO_NEAREST)
+        am_i_the_one = &Unmark::who_2_nearest;
+    else if (this->who == ONE_NN)
+        am_i_the_one = &Unmark::who_nn;
+    else if (this->who == TWO_NN)
+        am_i_the_one = &Unmark::who_2_nn;
+    else if (this->who == ONE_PNN)
+        am_i_the_one = &Unmark::who_pnn;
+    else if (this->who == TWO_PNN)
+        am_i_the_one = &Unmark::who_2_pnn;
+    else
+        am_i_the_one = nullptr;
+
+    if (this->where == PASS_SIM)
+        where_should_i_go = &Unmark::where_pass_sim;
+    else if (this->where == PASS_SIM_DIFF)
+        where_should_i_go = &Unmark::where_pass_sim_diff;
+    else if (this->where == PASS_SIM_DIFF_HOMEPOS)
+        where_should_i_go = &Unmark::where_pass_sim_diff_homepos;
+    else if (this->where == NN)
+        where_should_i_go = &Unmark::where_nn;
+    else if (this->where == PASS_SIM_NN)
+        where_should_i_go = &Unmark::where_pass_sim_nn;
+    else
+        where_should_i_go = nullptr;
+
+}
+
+bool Unmark::execute(PlayerAgent *agent) {
+    const WorldModel& wm = agent->world();
+    if (!(this->*am_i_the_one)(wm))
+        return false;
+    Vector2D target = (this->*where_should_i_go)(wm);
+    if (Body_GoToPoint(target, 0.5, 100).execute(agent))
+        return true;
+    if (Body_TurnToPoint(target).execute(agent))
+        return true;
+    return false;
+}
+
+bool Unmark::who_nearest(const WorldModel &wm) {
+    return false;
+}
+
+bool Unmark::who_nn(const WorldModel &wm) {
+    return false;
+}
+
+rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
+    return rcsc::Vector2D();
+}
+
+rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
+    return rcsc::Vector2D();
+}
+
+rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
+    return rcsc::Vector2D();
+}
+
+rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
+    return rcsc::Vector2D();
+}
+
+rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
+    return rcsc::Vector2D();
+}
+
+bool Unmark::who_2_nearest(const WorldModel &wm) {
+    return false;
+}
+
+bool Unmark::who_2_nn(const WorldModel &wm) {
+    return false;
+}
+
+bool Unmark::who_pnn(const WorldModel &wm) {
+    return false;
+}
+
+bool Unmark::who_2_pnn(const WorldModel &wm) {
+    return false;
+}
+
+bool Unmark::who_everyone(const WorldModel &wm) {
+    return false;
+}
+
+
 /*-------------------------------------------------------------------*/
 /*!
+ *
+ *
 
  */
+
 bool
-Bhv_BasicMove::execute( PlayerAgent * agent )
-{
-    dlog.addText( Logger::TEAM,
-                  __FILE__": Bhv_BasicMove" );
+Bhv_BasicMove::execute(PlayerAgent *agent) {
+    dlog.addText(Logger::TEAM,
+                 __FILE__": Bhv_BasicMove");
 
     //-----------------------------------------------
     // tackle
-    if ( Bhv_BasicTackle( 0.8, 80.0 ).execute( agent ) )
-    {
+    if (Bhv_BasicTackle(0.8, 80.0).execute(agent)) {
         return true;
     }
 
-    const WorldModel & wm = agent->world();
+    const WorldModel &wm = agent->world();
     /*--------------------------------------------------------*/
     // chase ball
     const int self_min = wm.interceptTable()->selfReachCycle();
     const int mate_min = wm.interceptTable()->teammateReachCycle();
     const int opp_min = wm.interceptTable()->opponentReachCycle();
 
-    if ( ! wm.existKickableTeammate()
-         && ( self_min <= 3
-              || ( self_min <= mate_min
-                   && self_min < opp_min + 3 )
-              )
-         )
-    {
-        dlog.addText( Logger::TEAM,
-                      __FILE__": intercept" );
-        Body_Intercept().execute( agent );
-        agent->setNeckAction( new Neck_OffensiveInterceptNeck() );
+    if (!wm.existKickableTeammate()
+        && (self_min <= 3
+            || (self_min <= mate_min
+                && self_min < opp_min + 3)
+        )
+            ) {
+        dlog.addText(Logger::TEAM,
+                     __FILE__": intercept");
+        Body_Intercept().execute(agent);
+        agent->setNeckAction(new Neck_OffensiveInterceptNeck());
 
         return true;
     }
 
-    const Vector2D target_point = Strategy::i().getPosition( wm.self().unum() );
-    const double dash_power = Strategy::get_normal_dash_power( wm );
+    const Vector2D target_point = Strategy::i().getPosition(wm.self().unum());
+    const double dash_power = Strategy::get_normal_dash_power(wm);
 
     double dist_thr = wm.ball().distFromSelf() * 0.1;
-    if ( dist_thr < 1.0 ) dist_thr = 1.0;
+    if (dist_thr < 1.0) dist_thr = 1.0;
 
-    dlog.addText( Logger::TEAM,
-                  __FILE__": Bhv_BasicMove target=(%.1f %.1f) dist_thr=%.2f",
-                  target_point.x, target_point.y,
-                  dist_thr );
+    dlog.addText(Logger::TEAM,
+                 __FILE__": Bhv_BasicMove target=(%.1f %.1f) dist_thr=%.2f",
+                 target_point.x, target_point.y,
+                 dist_thr);
 
-    agent->debugClient().addMessage( "BasicMove%.0f", dash_power );
-    agent->debugClient().setTarget( target_point );
-    agent->debugClient().addCircle( target_point, dist_thr );
+    agent->debugClient().addMessage("BasicMove%.0f", dash_power);
+    agent->debugClient().setTarget(target_point);
+    agent->debugClient().addCircle(target_point, dist_thr);
 
-    if ( ! Body_GoToPoint( target_point, dist_thr, dash_power
-                           ).execute( agent ) )
-    {
-        Body_TurnToBall().execute( agent );
+    if (!Body_GoToPoint(target_point, dist_thr, dash_power
+    ).execute(agent)) {
+        Body_TurnToBall().execute(agent);
     }
 
-    if ( wm.existKickableOpponent()
-         && wm.ball().distFromSelf() < 18.0 )
-    {
-        agent->setNeckAction( new Neck_TurnToBall() );
-    }
-    else
-    {
-        agent->setNeckAction( new Neck_TurnToBallOrScan() );
+    if (wm.existKickableOpponent()
+        && wm.ball().distFromSelf() < 18.0) {
+        agent->setNeckAction(new Neck_TurnToBall());
+    } else {
+        agent->setNeckAction(new Neck_TurnToBallOrScan());
     }
 
     return true;

@@ -29,17 +29,90 @@
 
 #include <rcsc/geom/vector_2d.h>
 #include <rcsc/player/soccer_action.h>
+#include <action_chain_graph.h>
 
 class Bhv_BasicMove
-    : public rcsc::SoccerBehavior {
+        : public rcsc::SoccerBehavior {
 public:
-    Bhv_BasicMove()
-      { }
+    Bhv_BasicMove() {}
 
-    bool execute( rcsc::PlayerAgent * agent );
+    bool execute(rcsc::PlayerAgent *agent);
 
 private:
-    double getDashPower( const rcsc::PlayerAgent * agent );
+    double getDashPower(const rcsc::PlayerAgent *agent);
 };
 
+
+class Unmark {
+public:
+    enum Who {
+        EVERYONE,
+        NEAREST,
+        TWO_NEAREST,
+        ONE_NN,
+        TWO_NN,
+        ONE_PNN,
+        TWO_PNN
+    };
+
+    enum Where {
+        PASS_SIM,
+        PASS_SIM_DIFF,
+        PASS_SIM_DIFF_HOMEPOS,
+        NN,
+        PASS_SIM_NN
+    };
+
+public:
+    Who who;
+    Where where;
+
+    bool (Unmark::*am_i_the_one)(const rcsc::WorldModel &);
+
+    rcsc::Vector2D (Unmark::*where_should_i_go)(const rcsc::WorldModel &);
+
+    Unmark(Who _who, Where _where);
+
+    bool execute(rcsc::PlayerAgent *agent);
+
+public:
+    bool who_everyone(const rcsc::WorldModel &wm);
+
+    bool who_nearest(const rcsc::WorldModel &wm);
+
+    bool who_nn(const rcsc::WorldModel &wm);
+
+    bool who_2_nearest(const rcsc::WorldModel &wm);
+
+    bool who_2_nn(const rcsc::WorldModel &wm);
+
+    bool who_pnn(const rcsc::WorldModel &wm);
+
+    bool who_2_pnn(const rcsc::WorldModel &wm);
+
+    rcsc::Vector2D where_pass_sim(const rcsc::WorldModel &wm);
+
+    rcsc::Vector2D where_pass_sim_diff_homepos(const rcsc::WorldModel &wm);
+
+    rcsc::Vector2D where_nn(const rcsc::WorldModel &wm);
+
+    rcsc::Vector2D where_pass_sim_diff(const rcsc::WorldModel &wm);
+
+    rcsc::Vector2D where_pass_sim_nn(const rcsc::WorldModel &wm);
+};
+
+
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
