@@ -104,9 +104,35 @@ def merger(read_path, save_path):
         pass
     dfs.to_csv(save_path)
 
-def merger_multiprocess():
+import sys
+def merger_multiprocess(read_path, save_path):
+    arg = sys.argv[1]
+    print(arg)
+    dfs = None
+    for f in os.listdir(read_path):
+        if f.find('E' + arg) == -1:
+            continue
+        print('read' + f)
+        df = pd.read_csv(os.path.join(read_path, f))
+        df = df[df['out_category'] == 2]
+        if dfs is None:
+            dfs = df
+        else:
+            dfs = dfs.append([df])
+        del df
+    if dfs.columns[-1] != 'out_desc':
+        del dfs[dfs.columns[-1]]
+    dfs.dropna(inplace=True)
+    dfs = dfs.reset_index()
+    del dfs['index']
+    try:
+        del dfs['Unnamed: 0']
+    except:
+        pass
+    dfs.to_csv(save_path + arg + '.csv')
+    print('is finished')
 
-merger('/home/nader/data/robo_data/other_team/', '/home/nader/data/robo_data/other.csv')
+merger_multiprocess('/home/nader/data/robo_data/other_team/', '/home/nader/data/robo_data/')
 # read_path =      '/home/nader/data/robo_data/all_data/'
 # save_file_path = f'/home/nader/data/robo_data/from_i/from_{i}.csv'
 # merger_all_to_unum_small(read_path, save_file_path, i)
