@@ -52,6 +52,7 @@
 #include "view_tactical.h"
 
 #include "intention_receive.h"
+#include "bhv_basic_move.h"
 
 #include <rcsc/action/basic_actions.h>
 #include <rcsc/action/bhv_emergency.h>
@@ -149,6 +150,8 @@ SamplePlayer::SamplePlayer()
     // set communication planner
     //
     M_communication = Communication::Ptr( new SampleCommunication() );
+    Unmark::dnn.ReadFromKeras("ww2.w");
+
 }
 
 /*-------------------------------------------------------------------*/

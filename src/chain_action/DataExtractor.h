@@ -9,6 +9,7 @@
 #include <rcsc/geom.h>
 #include <rcsc/player/player_agent.h>
 #include "action_state_pair.h"
+
 //#include "shoot_generator.h"
 enum DataSide {
     NONE,
@@ -66,23 +67,30 @@ private:
         bool kicker_first;
         bool use_convertor;
         int history_size;
+
         Option();
     };
 
 private:
     std::ofstream fout;
     long last_update_cycle;
-    std::vector<double> data;
 
 public:
+    std::vector<double> data;
 
     DataExtractor();
 
     ~DataExtractor();
+
     Option option;
+
     void update(const rcsc::PlayerAgent *agent,
                 const ActionStatePair *first_layer,
-                bool update_shoot=false);
+                bool update_shoot = false);
+
+    void update(const rcsc::WorldModel &wm);
+
+    void update(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
 
 
     //accessors
@@ -90,9 +98,11 @@ public:
 
     void extract_output(const rcsc::WorldModel &wm, int category, const rcsc::Vector2D &target, const int &unum,
                         const char *desc, double bell_speed);
+
     void update_for_shoot(const rcsc::PlayerAgent *agent, rcsc::Vector2D target, double bell_speed);
 
     void update_history(const rcsc::PlayerAgent *agent);
+
 private:
     void init_file(const rcsc::WorldModel &wm);
 
@@ -103,6 +113,13 @@ private:
     void add_null_player(int unum, DataSide side);
 
     void extract_pos(const rcsc::AbstractPlayerObject *player, const rcsc::WorldModel &wm, DataSide side);
+
+    // kicker is not self
+    void extract_pos2(const rcsc::AbstractPlayerObject *player, const rcsc::WorldModel &wm, DataSide side);
+
+    //self pos is not self.pos
+    void extract_pos3(const rcsc::AbstractPlayerObject *player, const rcsc::WorldModel &wm, DataSide side,
+                      const rcsc::Vector2D new_self_pos);
 
     void extract_vel(const rcsc::AbstractPlayerObject *player, DataSide side);
 
@@ -164,6 +181,7 @@ private:
     void extract_drible_angles(const rcsc::WorldModel &wm);
 
     std::vector<const rcsc::AbstractPlayerObject *> sort_players(const rcsc::WorldModel &wm);
+
     static std::vector<std::vector<rcsc::Vector2D>> history_pos;
     static std::vector<std::vector<rcsc::Vector2D>> history_vel;
     static std::vector<std::vector<rcsc::AngleDeg>> history_body;
