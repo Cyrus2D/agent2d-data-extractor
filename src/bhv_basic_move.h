@@ -30,6 +30,7 @@
 #include <rcsc/geom/vector_2d.h>
 #include <rcsc/player/soccer_action.h>
 #include <action_chain_graph.h>
+#include <CppDNN/DeepNueralNetwork.h>
 
 class Bhv_BasicMove
         : public rcsc::SoccerBehavior {
@@ -77,6 +78,9 @@ public:
     bool execute(rcsc::PlayerAgent *agent);
 
 public:
+    static DeepNueralNetwork dnn;
+
+public:
     bool who_everyone(const rcsc::WorldModel &wm);
 
     bool who_nearest(const rcsc::WorldModel &wm);
@@ -112,6 +116,7 @@ public:
     int simulate_pass(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
 
     double get_value_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos);
+
 };
 
 

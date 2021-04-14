@@ -46,6 +46,7 @@
 
 #include <rcsc/common/logger.h>
 #include <rcsc/common/server_param.h>
+#include <DataExtractor.h>
 
 #include "neck_offensive_intercept_neck.h"
 
@@ -53,6 +54,7 @@
 
 using namespace rcsc;
 
+DeepNueralNetwork Unmark::dnn = DeepNueralNetwork();
 
 Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
     this->who = _who;
@@ -92,11 +94,12 @@ Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
 
 bool Unmark::execute(PlayerAgent *agent) {
     std::cout << "UNMARK" << std::endl;
-    const WorldModel &wm = agent->world();
+    const WorldModel &wm = agent->fullstateWorld();
 
     const AbstractPlayerObject *kicker = wm.interceptTable()->fastestTeammate();
     if (kicker == nullptr || kicker->unum() < 1)
         return false;
+
     this->kicker_unum = kicker->unum();
 
     if (!(this->*am_i_the_one)(wm))
@@ -349,24 +352,138 @@ rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
 }
 
 int Unmark::get_unum_from_dnn(const WorldModel &wm) {
-    return 0;
+    DataExtractor::i().update(wm);
+    std::vector<double> &data = DataExtractor::i().data;
+    MatrixXd input(data.size(), 1);
+    for (int i = 0; i < data.size(); i++)
+        input(i, 0) = data[i];
+
+    Unmark::dnn.Calculate(input);
+    int unum = -1;
+    double max_val = -10;
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+    for (int i = 0; i < 11; i++) {
+#ifdef UNMARK_DEBUG
+        dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
+#endif
+        if (dnn.mOutput(i, 0) > max_val) {
+            max_val = dnn.mOutput(i, 0);
+            unum = i + 1;
+        }
+    }
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif;
+
+    return unum;
 }
 
 std::pair<int, int> Unmark::get_2_unum_from_dnn(const WorldModel &wm) {
-    return std::pair<int, int>();
+    DataExtractor::i().update(wm);
+    std::vector<double> &data = DataExtractor::i().data;
+    MatrixXd input(data.size(), 1);
+    for (int i = 0; i < data.size(); i++)
+        input(i, 0) = data[i];
+
+    Unmark::dnn.Calculate(input);
+    int unum1 = -1;
+    int unum2 = -1;
+    double max_val1 = -10;
+    double max_val2 = -10;
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif;
+    for (int i = 0; i < 11; i++) {
+#ifdef UNMARK_DEBUG
+        dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
+#endif
+        if (dnn.mOutput(i, 0) > max_val2) {
+            max_val2 = dnn.mOutput(i, 0);
+            unum2 = i + 1;
+        }
+        if (dnn.mOutput(i, 0) > max_val1) {
+            max_val2 = max_val1;
+            unum2 = unum1;
+            max_val1 = dnn.mOutput(i, 0);
+            unum1 = i + 1;
+        }
+    }
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+
+    return std::pair<int, int>(unum1, unum2);
 }
 
 int Unmark::get_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    return 0;
+    DataExtractor::i().update(wm, new_self_pos);
+    std::vector<double> &data = DataExtractor::i().data;
+    MatrixXd input(data.size(), 1);
+    for (int i = 0; i < data.size(); i++)
+        input(i, 0) = data[i];
+
+    Unmark::dnn.Calculate(input);
+    int unum = -1;
+    double max_val = -10;
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+    for (int i = 0; i < 11; i++) {
+#ifdef UNMARK_DEBUG
+        dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
+#endif
+        if (dnn.mOutput(i, 0) > max_val) {
+            max_val = dnn.mOutput(i, 0);
+            unum = i + 1;
+        }
+    }
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+
+    return unum;
 }
 
 std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    return std::pair<int, int>();
+    DataExtractor::i().update(wm, new_self_pos);
+    std::vector<double> &data = DataExtractor::i().data;
+    MatrixXd input(data.size(), 1);
+    for (int i = 0; i < data.size(); i++)
+        input(i, 0) = data[i];
+
+    Unmark::dnn.Calculate(input);
+    int unum1 = -1;
+    int unum2 = -1;
+    double max_val1 = -10;
+    double max_val2 = -10;
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+    for (int i = 0; i < 11; i++) {
+#ifdef UNMARK_DEBUG
+        dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
+#endif
+        if (dnn.mOutput(i, 0) > max_val2) {
+            max_val2 = dnn.mOutput(i, 0);
+            unum2 = i + 1;
+        }
+        if (dnn.mOutput(i, 0) > max_val1) {
+            max_val2 = max_val1;
+            unum2 = unum1;
+            max_val1 = dnn.mOutput(i, 0);
+            unum1 = i + 1;
+        }
+    }
+#ifdef UNMARK_DEBUG
+    dlog.addText(Logger::MARK, "##########");
+#endif
+
+    return std::pair<int, int>(unum1, unum2);
 }
 
 int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    std::cout << "A" << std::endl;
-    const AbstractPlayerObject *kicker = wm.ourPlayer(this->kicker_unum);
     Vector2D ball_pos = wm.ball().pos();
 
     double ball_reach_vel = 1;
@@ -375,7 +492,6 @@ int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_po
         dist -= ball_reach_vel;
         ball_reach_vel /= ServerParam::i().ballDecay();
     }
-    std::cout << "B" << std::endl;
 
     Vector2D ball_vel = Vector2D::polar2vector(ball_reach_vel, (new_self_pos - ball_pos).th());
     ball_pos += ball_vel;
@@ -383,13 +499,11 @@ int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_po
     int min_diff = 100;
     int cycle = 1;
     while (cycle < 40) {
-        std::cout << "C" << std::endl;
 
         if (ball_pos.dist(new_self_pos) < 1.1)
             break;
 
         for (int i = 1; i <= 11; i++) {
-            std::cout << "D" << std::endl;
             const AbstractPlayerObject *opp = wm.theirPlayer(i);
             if (opp == nullptr || opp->unum() < 0)
                 continue;
@@ -433,21 +547,28 @@ int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_po
         ball_vel *= ServerParam::i().ballDecay();
         cycle++;
     }
-    std::cout << "F" << std::endl;
 
 #ifdef UNMARK_DEBUG
     dlog.addText(Logger::MARK, "new_self_pos(%f.2, %f.2) succeed, min_diff: %d",
                  new_self_pos.x,
                  new_self_pos.y,
                  min_diff);
-    dlog.addCircle(Logger::MARK, new_self_pos,0.2,"#000000", true);
+    dlog.addCircle(Logger::MARK, new_self_pos, 0.2, "#000000", true);
 #endif
 
     return min_diff;
 }
 
 double Unmark::get_value_from_dnn(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    return 0;
+    DataExtractor::i().update(wm, new_self_pos);
+    std::vector<double> &data = DataExtractor::i().data;
+    MatrixXd input(data.size(), 1);
+    for (int i = 0; i < data.size(); i++)
+        input(i, 0) = data[i];
+
+    Unmark::dnn.Calculate(input);
+    double value = dnn.mOutput(wm.self().unum() - 1, 0);
+    return value;
 }
 
 /*-------------------------------------------------------------------*/
@@ -490,7 +611,7 @@ Bhv_BasicMove::execute(PlayerAgent *agent) {
     }
 
     if (mate_min < self_min && mate_min < opp_min + 2)
-        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM_DIFF).execute(agent))
+        if (Unmark(Unmark::TWO_NN, Unmark::PASS_SIM_DIFF).execute(agent))
             return true;
 
     const Vector2D target_point = Strategy::i().getPosition(wm.self().unum());
