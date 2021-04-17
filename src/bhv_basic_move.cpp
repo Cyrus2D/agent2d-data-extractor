@@ -226,7 +226,7 @@ rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
     const double n_angle = 10.;
     const double angle_step = 360. / n_angle;
 
-    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+    for (int i_dist = 1; i_dist <= n_dist; i_dist++) {
         const double dist = (double) i_dist * dist_step;
 
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
@@ -250,7 +250,7 @@ rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
     int max_diff = 0;
     Vector2D best_pos = Vector2D().invalidate();
 
-    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+    for (int i_dist = 1; i_dist <= n_dist; i_dist++) {
         const double dist = (double) i_dist * dist_step;
 
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
@@ -276,7 +276,7 @@ rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
     int max_diff = 0;
     Vector2D best_pos = Vector2D().invalidate();
 
-    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+    for (int i_dist = 1; i_dist <= n_dist; i_dist++) {
         const double dist = (double) i_dist * dist_step;
 
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
@@ -304,7 +304,7 @@ rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
     double max_value = -100;
     Vector2D best_pos = Vector2D().invalidate();
 
-    for (int i_dist = 0; i_dist < n_dist; i_dist++) {
+    for (int i_dist = 1; i_dist <= n_dist; i_dist++) {
         const double dist = (double) i_dist * dist_step;
 
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
