@@ -104,6 +104,7 @@ bool Unmark::execute(PlayerAgent *agent) {
 
     if (!(this->*am_i_the_one)(wm))
         return false;
+    
     std::cout << "am i the one done" << std::endl;
     Vector2D target = (this->*where_should_i_go)(wm);
     std::cout << "where should i go done" << std::endl;
@@ -364,13 +365,13 @@ int Unmark::get_unum_from_dnn(const WorldModel &wm) {
 #ifdef UNMARK_DEBUG
     dlog.addText(Logger::MARK, "##########");
 #endif
-    for (int i = 0; i < 11; i++) {
+    for (int i = 1; i <= 11; i++) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
         if (dnn.mOutput(i, 0) > max_val) {
             max_val = dnn.mOutput(i, 0);
-            unum = i + 1;
+            unum = i;
         }
     }
 #ifdef UNMARK_DEBUG
@@ -395,19 +396,19 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const WorldModel &wm) {
 #ifdef UNMARK_DEBUG
     dlog.addText(Logger::MARK, "##########");
 #endif;
-    for (int i = 0; i < 11; i++) {
+    for (int i = 1; i <= 11; i++) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
         if (dnn.mOutput(i, 0) > max_val2) {
             max_val2 = dnn.mOutput(i, 0);
-            unum2 = i + 1;
+            unum2 = i;
         }
         if (dnn.mOutput(i, 0) > max_val1) {
             max_val2 = max_val1;
             unum2 = unum1;
             max_val1 = dnn.mOutput(i, 0);
-            unum1 = i + 1;
+            unum1 = i;
         }
     }
 #ifdef UNMARK_DEBUG
@@ -430,13 +431,13 @@ int Unmark::get_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D n
 #ifdef UNMARK_DEBUG
     dlog.addText(Logger::MARK, "##########");
 #endif
-    for (int i = 0; i < 11; i++) {
+    for (int i = 1; i <= 11; i++) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
         if (dnn.mOutput(i, 0) > max_val) {
             max_val = dnn.mOutput(i, 0);
-            unum = i + 1;
+            unum = i;
         }
     }
 #ifdef UNMARK_DEBUG
@@ -461,19 +462,19 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, cons
 #ifdef UNMARK_DEBUG
     dlog.addText(Logger::MARK, "##########");
 #endif
-    for (int i = 0; i < 11; i++) {
+    for (int i = 1; i <= 11; i++) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
         if (dnn.mOutput(i, 0) > max_val2) {
             max_val2 = dnn.mOutput(i, 0);
-            unum2 = i + 1;
+            unum2 = i;
         }
         if (dnn.mOutput(i, 0) > max_val1) {
             max_val2 = max_val1;
             unum2 = unum1;
             max_val1 = dnn.mOutput(i, 0);
-            unum1 = i + 1;
+            unum1 = i;
         }
     }
 #ifdef UNMARK_DEBUG
@@ -567,7 +568,7 @@ double Unmark::get_value_from_dnn(const WorldModel &wm, const rcsc::Vector2D new
         input(i, 0) = data[i];
 
     Unmark::dnn.Calculate(input);
-    double value = dnn.mOutput(wm.self().unum() - 1, 0);
+    double value = dnn.mOutput(wm.self().unum(), 0);
     return value;
 }
 

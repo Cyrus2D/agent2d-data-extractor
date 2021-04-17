@@ -10,8 +10,9 @@
 #include <time.h>
 
 #define cm ","
+// #define ADD_ELEM(key, value) data.push_back(value);fout << (value) << cm
 #define ADD_ELEM(key, value) data.push_back(value)
-//#define ADD_ELEM(key, value) fout << (value) << cm
+// #define ADD_ELEM(key, value) fout << (value) << cm
 
 double invalid_data = -2.0;
 
@@ -184,13 +185,13 @@ void DataExtractor::update(const PlayerAgent *agent, const ActionStatePair *firs
 void DataExtractor::update(const WorldModel &wm) {
     if (wm.gameMode().type() != rcsc::GameMode::PlayOn)
         return;
-//    if (!fout.is_open()) {
-//        init_file(wm);
-//    }
+//   if (!fout.is_open()) {
+//       init_file(wm);
+//   }
     data.clear();
 
     // cycle
-    ADD_ELEM("cycle", convertor_cycle(wm.time().cycle()));
+    // ADD_ELEM("cycle", convertor_cycle(wm.time().cycle()));
 
     // ball
     {
@@ -198,34 +199,34 @@ void DataExtractor::update(const WorldModel &wm) {
         if (wm.ball().posValid()) {
             ADD_ELEM("p_x", convertor_x(wm.ball().pos().x));
             ADD_ELEM("p_y", convertor_y(wm.ball().pos().y));
-            ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
-            ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
-            ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
-            ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
-            ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
-            ADD_ELEM("kicker_t", convertor_angle(rpos.th().degree()));
+            // ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
+            // ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
+            // ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
+            // ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
+            // ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
+            // ADD_ELEM("kicker_t", convertor_angle(rpos.th().degree()));
         } else {
             ADD_ELEM("p_x", invalid_data);
             ADD_ELEM("p_y", invalid_data);
-            ADD_ELEM("p_r", invalid_data);
-            ADD_ELEM("p_t", invalid_data);
-            ADD_ELEM("kicker_x", invalid_data);
-            ADD_ELEM("kicker_y", invalid_data);
-            ADD_ELEM("kicker_r", invalid_data);
-            ADD_ELEM("kicker_t", invalid_data);
+            // ADD_ELEM("p_r", invalid_data);
+            // ADD_ELEM("p_t", invalid_data);
+            // ADD_ELEM("kicker_x", invalid_data);
+            // ADD_ELEM("kicker_y", invalid_data);
+            // ADD_ELEM("kicker_r", invalid_data);
+            // ADD_ELEM("kicker_t", invalid_data);
         }
         if (wm.ball().velValid()) {
-            ADD_ELEM("v_x", convertor_bvx(wm.ball().vel().x));
-            ADD_ELEM("v_y", convertor_bvy(wm.ball().vel().y));
-            ADD_ELEM("v_r", convertor_bv(wm.ball().vel().r()));
-            ADD_ELEM("v_t", convertor_angle(wm.ball().vel().th().degree()));
+            // ADD_ELEM("v_x", convertor_bvx(wm.ball().vel().x));
+            // ADD_ELEM("v_y", convertor_bvy(wm.ball().vel().y));
+            // ADD_ELEM("v_r", convertor_bv(wm.ball().vel().r()));
+            // ADD_ELEM("v_t", convertor_angle(wm.ball().vel().th().degree()));
         } else {
-            ADD_ELEM("v_x", invalid_data);
-            ADD_ELEM("v_y", invalid_data);
-            ADD_ELEM("v_r", invalid_data);
-            ADD_ELEM("v_t", invalid_data);
+            // ADD_ELEM("v_x", invalid_data);
+            // ADD_ELEM("v_y", invalid_data);
+            // ADD_ELEM("v_r", invalid_data);
+            // ADD_ELEM("v_t", invalid_data);
         }
-        ADD_ELEM("offside_count", wm.offsideLineCount());
+        // ADD_ELEM("offside_count", wm.offsideLineCount());
     }
 
     // player
@@ -266,13 +267,13 @@ void DataExtractor::update(const WorldModel &wm) {
 void DataExtractor::update(const WorldModel &wm, const Vector2D new_self_pos) {
     if (wm.gameMode().type() != rcsc::GameMode::PlayOn)
         return;
-//    if (!fout.is_open()) {
-//        init_file(wm);
-//    }
+//   if (!fout.is_open()) {
+//       init_file(wm);
+//   }
     data.clear();
 
     // cycle
-    ADD_ELEM("cycle", convertor_cycle(wm.time().cycle()));
+    // ADD_ELEM("cycle", convertor_cycle(wm.time().cycle()));
 
     // ball
     {
@@ -280,34 +281,34 @@ void DataExtractor::update(const WorldModel &wm, const Vector2D new_self_pos) {
         if (wm.ball().posValid()) {
             ADD_ELEM("p_x", convertor_x(wm.ball().pos().x));
             ADD_ELEM("p_y", convertor_y(wm.ball().pos().y));
-            ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
-            ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
-            ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
-            ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
-            ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
-            ADD_ELEM("kicker_t", convertor_angle(rpos.th().degree()));
+            // ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
+            // ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
+            // ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
+            // ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
+            // ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
+            // ADD_ELEM("kicker_t", convertor_angle(rpos.th().degree()));
         } else {
             ADD_ELEM("p_x", invalid_data);
             ADD_ELEM("p_y", invalid_data);
-            ADD_ELEM("p_r", invalid_data);
-            ADD_ELEM("p_t", invalid_data);
-            ADD_ELEM("kicker_x", invalid_data);
-            ADD_ELEM("kicker_y", invalid_data);
-            ADD_ELEM("kicker_r", invalid_data);
-            ADD_ELEM("kicker_t", invalid_data);
+            // ADD_ELEM("p_r", invalid_data);
+            // ADD_ELEM("p_t", invalid_data);
+            // ADD_ELEM("kicker_x", invalid_data);
+            // ADD_ELEM("kicker_y", invalid_data);
+            // ADD_ELEM("kicker_r", invalid_data);
+            // ADD_ELEM("kicker_t", invalid_data);
         }
         if (wm.ball().velValid()) {
-            ADD_ELEM("v_x", convertor_bvx(wm.ball().vel().x));
-            ADD_ELEM("v_y", convertor_bvy(wm.ball().vel().y));
-            ADD_ELEM("v_r", convertor_bv(wm.ball().vel().r()));
-            ADD_ELEM("v_t", convertor_angle(wm.ball().vel().th().degree()));
+            // ADD_ELEM("v_x", convertor_bvx(wm.ball().vel().x));
+            // ADD_ELEM("v_y", convertor_bvy(wm.ball().vel().y));
+            // ADD_ELEM("v_r", convertor_bv(wm.ball().vel().r()));
+            // ADD_ELEM("v_t", convertor_angle(wm.ball().vel().th().degree()));
         } else {
-            ADD_ELEM("v_x", invalid_data);
-            ADD_ELEM("v_y", invalid_data);
-            ADD_ELEM("v_r", invalid_data);
-            ADD_ELEM("v_t", invalid_data);
+            // ADD_ELEM("v_x", invalid_data);
+            // ADD_ELEM("v_y", invalid_data);
+            // ADD_ELEM("v_r", invalid_data);
+            // ADD_ELEM("v_t", invalid_data);
         }
-        ADD_ELEM("offside_count", wm.offsideLineCount());
+        // ADD_ELEM("offside_count", wm.offsideLineCount());
     }
 
     // player
@@ -1447,25 +1448,25 @@ Polar::Polar(rcsc::Vector2D p) {
 
 DataExtractor::Option::Option() {
     side = NONE;
-    unum = BOTH;
-    type = BOTH;
-    body = BOTH;
-    face = BOTH;
+    unum = NONE;
+    type = NONE;
+    body = NONE;
+    face = NONE;
     tackling = NONE;
     kicking = NONE;
     card = NONE;
     pos = BOTH;
-    relativePos = BOTH;
-    polarPos = BOTH;
-    vel = BOTH;
-    polarVel = BOTH;
+    relativePos = NONE;
+    polarPos = NONE;
+    vel = NONE;
+    polarVel = NONE;
     counts = NONE;
-    isKicker = TM;
-    openAnglePass = TM;
-    nearestOppDist = TM;
-    polarGoalCenter = TM;
+    isKicker = NONE;
+    openAnglePass = NONE;
+    nearestOppDist = NONE;
+    polarGoalCenter = NONE;
     openAngleGoal = NONE;
-    in_offside = TM;
+    in_offside = NONE;
 
     dribleAngle = NONE;
     nDribleAngle = 12;
