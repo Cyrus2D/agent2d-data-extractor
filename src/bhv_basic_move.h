@@ -47,7 +47,7 @@ private:
 class Unmark {
 public:
     enum Who {
-        EVERYONE,
+        EVERYONE=0,
         NEAREST,
         TWO_NEAREST,
         ONE_NN,
@@ -57,7 +57,7 @@ public:
     };
 
     enum Where {
-        PASS_SIM,
+        PASS_SIM=0,
         PASS_SIM_DIFF,
         PASS_SIM_DIFF_HOMEPOS,
         NN,

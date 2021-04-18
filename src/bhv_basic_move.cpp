@@ -104,7 +104,7 @@ bool Unmark::execute(PlayerAgent *agent) {
 
     if (!(this->*am_i_the_one)(wm))
         return false;
-    
+
     std::cout << "am i the one done" << std::endl;
     Vector2D target = (this->*where_should_i_go)(wm);
     std::cout << "where should i go done" << std::endl;
@@ -610,78 +610,26 @@ Bhv_BasicMove::execute(PlayerAgent *agent) {
 
         return true;
     }
+    std::vector<std::pair<Unmark::Who, Unmark::Where>> states;
+    for (int i = 0; i < 7; i++)
+        for (int j = 0; j < 5; j++)
+            states.push_back(std::pair<Unmark::Who, Unmark::Where>((Unmark::Who) i, (Unmark::Where) j));
 
-    if (mate_min < self_min && mate_min < opp_min + 2){
-        if (Unmark(Unmark::EVERYONE, Unmark::PASS_SIM).execute(agent))
+    std::string team_name = wm.teamName();
+    int team_name_size = team_name.size();
+    int index = 0;
+    if (team_name[team_name_size - 2] == '_') {
+        index += (int) (team_name[team_name_size - 1] - '0');
+    } else {
+        index += (int) (team_name[team_name_size - 1] - '0');
+        index += (int) (team_name[team_name_size - 2] - '0') * 10;
+    }
+
+    if (mate_min < self_min && mate_min < opp_min + 2) {
+        std::cout << "UNMARK: " << team_name << ", " << states[index].first << ", " << states[index].second
+                  << std::endl;
+        if (Unmark(states[index].first, states[index].second).execute(agent))
             return true;
-//        if (Unmark(Unmark::EVERYONE, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::EVERYONE, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::EVERYONE, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::EVERYONE, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::NEAREST, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::NEAREST, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::NEAREST, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::NEAREST, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::NEAREST, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NEAREST, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NEAREST, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_NN, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_NN, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_NN, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_NN, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_NN, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NN, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NN, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NN, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NN, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_NN, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_PNN, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_PNN, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_PNN, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_PNN, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::ONE_PNN, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_PNN, Unmark::PASS_SIM).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_PNN, Unmark::PASS_SIM_DIFF).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_PNN, Unmark::PASS_SIM_DIFF_HOMEPOS).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_PNN, Unmark::NN).execute(agent))
-//            return true;
-//        if (Unmark(Unmark::TWO_PNN, Unmark::PASS_SIM_NN).execute(agent))
-//            return true;
     }
 
     const Vector2D target_point = Strategy::i().getPosition(wm.self().unum());
