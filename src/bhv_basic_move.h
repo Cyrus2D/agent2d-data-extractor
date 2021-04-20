@@ -63,13 +63,18 @@ public:
         NN,
         PASS_SIM_NN
     };
+    enum How {
+        MAX_SPEED=0,
+        NORMAL_SPEED
+    };
 
 public:
     Who who;
     Where where;
+    How how;
     int kicker_unum;
 
-    Unmark(Who _who, Where _where);
+    Unmark(Who _who, Where _where, How _how);
 
     bool (Unmark::*am_i_the_one)(const rcsc::WorldModel &);
 

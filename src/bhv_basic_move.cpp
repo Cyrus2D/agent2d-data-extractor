@@ -49,6 +49,8 @@
 #include <DataExtractor.h>
 
 #include "neck_offensive_intercept_neck.h"
+#include <tuple>
+
 
 #define UNMARK_DEBUG
 
@@ -56,9 +58,10 @@ using namespace rcsc;
 
 DeepNueralNetwork Unmark::dnn = DeepNueralNetwork();
 
-Unmark::Unmark(Unmark::Who _who, Unmark::Where _where) {
+Unmark::Unmark(Unmark::Who _who, Unmark::Where _where, Unmark::How _how) {
     this->who = _who;
     this->where = _where;
+    this->how = _how;
 
     if (this->who == EVERYONE)
         am_i_the_one = &Unmark::who_everyone;
@@ -108,10 +111,12 @@ bool Unmark::execute(PlayerAgent *agent) {
     std::cout << "am i the one done" << std::endl;
     Vector2D target = (this->*where_should_i_go)(wm);
     std::cout << "where should i go done" << std::endl;
-
+    double stamina = 100;
+    if (this->how == How::NORMAL_SPEED)
+        stamina = Strategy::get_normal_dash_power(wm);
     if (!target.isValid())
         return false;
-    if (Body_GoToPoint(target, 0.5, 100).execute(agent))
+    if (Body_GoToPoint(target, 0.5, stamina).execute(agent))
         return true;
     if (Body_TurnToPoint(target).execute(agent))
         return true;
@@ -129,7 +134,9 @@ bool Unmark::who_nearest(const WorldModel &wm) {
         const AbstractPlayerObject *tm = wm.ourPlayer(i);
         if (tm == nullptr || tm->unum() < 1)
             continue;
-
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         double dist = tm->distFromBall();
         if (dist < min_dist) {
             min_dist = dist;
@@ -151,7 +158,9 @@ bool Unmark::who_2_nearest(const WorldModel &wm) {
         const AbstractPlayerObject *tm = wm.ourPlayer(i);
         if (tm == nullptr || tm->unum() < 1)
             continue;
-
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         double dist = tm->distFromBall();
         if (dist < min_dist2) {
             min_dist2 = dist;
@@ -232,6 +241,8 @@ rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
             if (diff > 0)
                 return new_self_pos;
@@ -242,9 +253,9 @@ rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
 }
 
 rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
-    const double n_dist = 2.;
-    const double dist_step = 5. / n_dist;
-    const double n_angle = 10.;
+    const double n_dist = 4.;
+    const double dist_step = 10. / n_dist;
+    const double n_angle = 8.;
     const double angle_step = 360. / n_angle;
 
     int max_diff = 0;
@@ -256,6 +267,8 @@ rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
 
             if (diff > max_diff) {
@@ -268,9 +281,9 @@ rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
 }
 
 rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
-    const double n_dist = 2.;
-    const double dist_step = 5. / n_dist;
-    const double n_angle = 10.;
+    const double n_dist = 4.;
+    const double dist_step = 10. / n_dist;
+    const double n_angle = 8.;
     const double angle_step = 360. / n_angle;
 
     int max_diff = 0;
@@ -283,6 +296,8 @@ rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = Strategy::i().getPosition(wm.self().unum())
                                           + Vector2D::polar2vector(dist, angle);
+            if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
 
             if (diff > max_diff) {
@@ -296,9 +311,9 @@ rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
 }
 
 rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
-    const double n_dist = 2.;
-    const double dist_step = 5. / n_dist;
-    const double n_angle = 10.;
+    const double n_dist = 4.;
+    const double dist_step = 10. / n_dist;
+    const double n_angle = 8.;
     const double angle_step = 360. / n_angle;
 
     double max_value = -100;
@@ -310,6 +325,8 @@ rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
+            if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
             double value = get_value_from_dnn(wm, new_self_pos);
 
             if (value > max_value) {
@@ -336,7 +353,8 @@ rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
         for (int i_angle = 0; i_angle < n_angle; i_angle++) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
-
+            if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
             if (diff > 0) {
                 double value = get_value_from_dnn(wm, new_self_pos);
@@ -369,6 +387,9 @@ int Unmark::get_unum_from_dnn(const WorldModel &wm) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         if (dnn.mOutput(i, 0) > max_val) {
             max_val = dnn.mOutput(i, 0);
             unum = i;
@@ -400,6 +421,9 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const WorldModel &wm) {
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         if (dnn.mOutput(i, 0) > max_val2) {
             max_val2 = dnn.mOutput(i, 0);
             unum2 = i;
@@ -435,6 +459,9 @@ int Unmark::get_unum_from_dnn(const rcsc::WorldModel &wm, const rcsc::Vector2D n
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         if (dnn.mOutput(i, 0) > max_val) {
             max_val = dnn.mOutput(i, 0);
             unum = i;
@@ -466,6 +493,9 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, cons
 #ifdef UNMARK_DEBUG
         dlog.addText(Logger::MARK, "%f.3", dnn.mOutput(i, 0));
 #endif
+        if (wm.interceptTable()->fastestTeammate() != nullptr)
+            if (i == wm.interceptTable()->fastestTeammate()->unum())
+                continue;
         if (dnn.mOutput(i, 0) > max_val2) {
             max_val2 = dnn.mOutput(i, 0);
             unum2 = i;
@@ -493,17 +523,22 @@ int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_po
         dist -= ball_reach_vel;
         ball_reach_vel /= ServerParam::i().ballDecay();
     }
-
+    if (ball_reach_vel > 3)
+        ball_reach_vel = 3.0;
     Vector2D ball_vel = Vector2D::polar2vector(ball_reach_vel, (new_self_pos - ball_pos).th());
     ball_pos += ball_vel;
     ball_vel *= ServerParam::i().ballDecay();
     int min_diff = 100;
     int cycle = 1;
+    bool intercepted = false;
     while (cycle < 40) {
 
-        if (ball_pos.dist(new_self_pos) < 1.1)
+        if (ball_pos.dist(new_self_pos) < 1.1){
+            intercepted = true;
             break;
-
+        }
+        if (ball_vel.r() < 0.01)
+            break;
         for (int i = 1; i <= 11; i++) {
             const AbstractPlayerObject *opp = wm.theirPlayer(i);
             if (opp == nullptr || opp->unum() < 0)
@@ -556,8 +591,9 @@ int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_po
                  min_diff);
     dlog.addCircle(Logger::MARK, new_self_pos, 0.2, "#000000", true);
 #endif
-
-    return min_diff;
+    if (intercepted)
+        return min_diff;
+    return -100;
 }
 
 double Unmark::get_value_from_dnn(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
@@ -610,10 +646,13 @@ Bhv_BasicMove::execute(PlayerAgent *agent) {
 
         return true;
     }
-    std::vector<std::pair<Unmark::Who, Unmark::Where>> states;
+    std::vector<std::tuple<Unmark::Who, Unmark::Where, Unmark::How>> states;
     for (int i = 0; i < 7; i++)
         for (int j = 0; j < 5; j++)
-            states.push_back(std::pair<Unmark::Who, Unmark::Where>((Unmark::Who) i, (Unmark::Where) j));
+            for (int s = 0; s < 2; s++)
+                states.push_back(std::tuple<Unmark::Who, Unmark::Where, Unmark::How>((Unmark::Who) i,
+                                                                                     (Unmark::Where) j,
+                                                                                     (Unmark::How) s));
 
     std::string team_name = wm.teamName();
     int team_name_size = team_name.size();
@@ -626,9 +665,12 @@ Bhv_BasicMove::execute(PlayerAgent *agent) {
     }
 
     if (mate_min < self_min && mate_min < opp_min + 2) {
-        std::cout << "UNMARK: " << team_name << ", " << states[index].first << ", " << states[index].second
+        std::cout << "UNMARK: " << team_name << ", " << std::get<0>(states[index]) << ", "
+                  << std::get<1>(states[index]) << ", " << std::get<2>(states[index])
                   << std::endl;
-        if (Unmark(states[index].first, states[index].second).execute(agent))
+        if (Unmark(std::get<0>(states[index]),
+                   std::get<1>(states[index]),
+                   std::get<2>(states[index])).execute(agent))
             return true;
     }
 
