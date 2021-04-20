@@ -243,6 +243,8 @@ rcsc::Vector2D Unmark::where_pass_sim(const WorldModel &wm) {
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
             if (new_self_pos.x > wm.offsideLineX() - 0.5)
                 continue;
+            if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
             if (diff > 0)
                 return new_self_pos;
@@ -268,6 +270,8 @@ rcsc::Vector2D Unmark::where_pass_sim_diff(const WorldModel &wm) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
             if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
+            if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
                 continue;
             int diff = simulate_pass(wm, new_self_pos);
 
@@ -298,6 +302,8 @@ rcsc::Vector2D Unmark::where_pass_sim_diff_homepos(const WorldModel &wm) {
                                           + Vector2D::polar2vector(dist, angle);
             if (new_self_pos.x > wm.offsideLineX() - 0.5)
                 continue;
+            if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
+                continue;
             int diff = simulate_pass(wm, new_self_pos);
 
             if (diff > max_diff) {
@@ -327,6 +333,8 @@ rcsc::Vector2D Unmark::where_nn(const WorldModel &wm) {
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
             if (new_self_pos.x > wm.offsideLineX() - 0.5)
                 continue;
+            if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
+                continue;
             double value = get_value_from_dnn(wm, new_self_pos);
 
             if (value > max_value) {
@@ -354,6 +362,8 @@ rcsc::Vector2D Unmark::where_pass_sim_nn(const WorldModel &wm) {
             const double angle = (double) i_angle * angle_step;
             const Vector2D new_self_pos = wm.self().pos() + Vector2D::polar2vector(dist, angle);
             if (new_self_pos.x > wm.offsideLineX() - 0.5)
+                continue;
+            if (new_self_pos.absX() > 52.5 || new_self_pos.absY() > 34)
                 continue;
             int diff = simulate_pass(wm, new_self_pos);
             if (diff > 0) {
@@ -515,7 +525,7 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, cons
 }
 
 int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    Vector2D ball_pos = wm.ball().pos();
+    Vector2D ball_pos = wm.interceptTable()->fastestTeammate()->pos();
 
     double ball_reach_vel = 1;
     double dist = wm.ball().pos().dist(new_self_pos);

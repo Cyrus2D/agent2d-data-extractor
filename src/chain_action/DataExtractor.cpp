@@ -195,12 +195,17 @@ void DataExtractor::update(const WorldModel &wm) {
 
     // ball
     {
-        Vector2D rpos = wm.ball().pos() - wm.interceptTable()->fastestTeammate()->pos();
+        Vector2D ball_pos = wm.ball().pos();
+        Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
+        if (rpos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
+            ball_pos = wm.interceptTable()->fastestTeammate()->pos();
+            rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
+        }
         if (wm.ball().posValid()) {
-            ADD_ELEM("p_x", convertor_x(wm.ball().pos().x));
-            ADD_ELEM("p_y", convertor_y(wm.ball().pos().y));
-            // ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
-            // ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
+            ADD_ELEM("p_x", convertor_x(ball_pos.x));
+            ADD_ELEM("p_y", convertor_y(ball_pos.y));
+//             ADD_ELEM("p_r", convertor_dist(ball_pos.r()));
+//             ADD_ELEM("p_t", convertor_angle(ball_pos.th().degree()));
             // ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
             // ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
             // ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
@@ -277,12 +282,17 @@ void DataExtractor::update(const WorldModel &wm, const Vector2D new_self_pos) {
 
     // ball
     {
-        Vector2D rpos = wm.ball().pos() - wm.interceptTable()->fastestTeammate()->pos();
+        Vector2D ball_pos = wm.ball().pos();
+        Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
+        if (rpos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
+            ball_pos = wm.interceptTable()->fastestTeammate()->pos();
+            rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
+        }
         if (wm.ball().posValid()) {
-            ADD_ELEM("p_x", convertor_x(wm.ball().pos().x));
-            ADD_ELEM("p_y", convertor_y(wm.ball().pos().y));
-            // ADD_ELEM("p_r", convertor_dist(wm.ball().pos().r()));
-            // ADD_ELEM("p_t", convertor_angle(wm.ball().pos().th().degree()));
+            ADD_ELEM("p_x", convertor_x(ball_pos.x));
+            ADD_ELEM("p_y", convertor_y(ball_pos.y));
+//            ADD_ELEM("p_r", convertor_dist(ball_pos.r()));
+//            ADD_ELEM("p_t", convertor_angle(ball_pos.th().degree()));
             // ADD_ELEM("kicker_x", convertor_dist_x(rpos.x));
             // ADD_ELEM("kicker_y", convertor_dist_y(rpos.y));
             // ADD_ELEM("kicker_r", convertor_dist(rpos.r()));
