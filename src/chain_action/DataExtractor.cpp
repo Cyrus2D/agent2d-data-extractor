@@ -197,7 +197,7 @@ void DataExtractor::update(const WorldModel &wm) {
     {
         Vector2D ball_pos = wm.ball().pos();
         Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        if (rpos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
+        if (ball_pos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
             ball_pos = wm.interceptTable()->fastestTeammate()->pos();
             rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
         }
@@ -284,7 +284,7 @@ void DataExtractor::update(const WorldModel &wm, const Vector2D new_self_pos) {
     {
         Vector2D ball_pos = wm.ball().pos();
         Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        if (rpos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
+        if (ball_pos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
             ball_pos = wm.interceptTable()->fastestTeammate()->pos();
             rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
         }
