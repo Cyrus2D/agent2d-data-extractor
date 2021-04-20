@@ -195,12 +195,8 @@ void DataExtractor::update(const WorldModel &wm) {
 
     // ball
     {
-        Vector2D ball_pos = wm.ball().pos();
+        Vector2D ball_pos = wm.ball().inertiaPoint(wm.interceptTable()->teammateReachCycle());
         Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        if (ball_pos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
-            ball_pos = wm.interceptTable()->fastestTeammate()->pos();
-            rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        }
         if (wm.ball().posValid()) {
             ADD_ELEM("p_x", convertor_x(ball_pos.x));
             ADD_ELEM("p_y", convertor_y(ball_pos.y));
@@ -282,12 +278,8 @@ void DataExtractor::update(const WorldModel &wm, const Vector2D new_self_pos) {
 
     // ball
     {
-        Vector2D ball_pos = wm.ball().pos();
+        Vector2D ball_pos = wm.ball().inertiaPoint(wm.interceptTable()->teammateReachCycle());
         Vector2D rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        if (ball_pos.dist(wm.interceptTable()->fastestTeammate()->pos()) > 1.5) {
-            ball_pos = wm.interceptTable()->fastestTeammate()->pos();
-            rpos = ball_pos - wm.interceptTable()->fastestTeammate()->pos();
-        }
         if (wm.ball().posValid()) {
             ADD_ELEM("p_x", convertor_x(ball_pos.x));
             ADD_ELEM("p_y", convertor_y(ball_pos.y));
