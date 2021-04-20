@@ -515,7 +515,7 @@ std::pair<int, int> Unmark::get_2_unum_from_dnn(const rcsc::WorldModel &wm, cons
 }
 
 int Unmark::simulate_pass(const WorldModel &wm, const rcsc::Vector2D new_self_pos) {
-    Vector2D ball_pos = wm.ball().pos();
+    Vector2D ball_pos = wm.ball().inertiaPoint(wm.interceptTable()->teammateReachCycle());
 
     double ball_reach_vel = 1;
     double dist = wm.ball().pos().dist(new_self_pos);
